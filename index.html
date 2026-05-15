@@ -1855,7 +1855,7 @@ function renderCustomers() {
       if(!hay.includes(search)) return false;
     }
     return true;
-  }).sort((a,b)=>b.date.localeCompare(a.date)); // newest first
+  }); // Note: sorted once after load // newest first
 
   // KPIs
   const totalQty = custFiltered.reduce((a,e)=>a+e.qty,0);
@@ -1916,17 +1916,37 @@ function renderCustomers() {
     `Showing ${start+1}–${Math.min(start+CUST_PAGE_SIZE, custFiltered.length)} of ${custFiltered.length} records`;
 
   const pageBtns = document.getElementById('custPageBtns');
-  pageBtns.innerHTML = '';
-  for(let p=1; p<=totalPages; p++) {
-    if(totalPages > 7 && p > 3 && p < totalPages-1 && Math.abs(p-custPage) > 1) {
-      if(p===4) pageBtns.innerHTML += '<span style="padding:5px 4px;color:var(--text3)">…</span>';
-      continue;
-    }
-    const btn = document.createElement('button');
-    btn.className = 'page-btn' + (p===custPage?' active':'');
-    btn.textContent = p;
-    btn.onclick = () => { custPage=p; renderCustomers(); };
-    pageBtns.appendChild(btn);
+  if(pageBtns) {
+    const cpages = [];
+    cpages.push(1);
+    if(custPage > 3) cpages.push('...');
+    for(let p=Math.max(2,custPage-1); p<=Math.min(totalPages-1,custPage+1); p++) cpages.push(p);
+    if(custPage < totalPages-2) cpages.push('...');
+    if(totalPages > 1) cpages.push(totalPages);
+
+    pageBtns.innerHTML = '';
+    const cprev = document.createElement('button');
+    cprev.className='page-btn'; cprev.textContent='←'; cprev.disabled=custPage===1;
+    cprev.onclick=()=>{ if(custPage>1){custPage--;renderCustomers();} };
+    pageBtns.appendChild(cprev);
+
+    cpages.forEach(p=>{
+      if(p==='...'){
+        const sp=document.createElement('span');
+        sp.textContent='…'; sp.style.cssText='padding:5px 4px;color:var(--text3)';
+        pageBtns.appendChild(sp);
+      } else {
+        const btn=document.createElement('button');
+        btn.className='page-btn'+(p===custPage?' active':'');
+        btn.textContent=p; btn.onclick=()=>{custPage=p;renderCustomers();};
+        pageBtns.appendChild(btn);
+      }
+    });
+
+    const cnext=document.createElement('button');
+    cnext.className='page-btn'; cnext.textContent='→'; cnext.disabled=custPage===totalPages;
+    cnext.onclick=()=>{ if(custPage<totalPages){custPage++;renderCustomers();} };
+    pageBtns.appendChild(cnext);
   }
 }
 
@@ -1951,6 +1971,7 @@ async function loadBuyLeads() {
       console.log('[BL] fetch status:', r.status, '| first60:', txt.slice(0,60));
       if(txt && !txt.trim().startsWith('<!') && !txt.trim().startsWith('<html')) {
         buyLeads = parseBLCSV(txt);
+        buyLeads.sort((a,b)=>b.date.localeCompare(a.date)); // sort once
         localStorage.setItem('vg_buyleads', JSON.stringify(buyLeads));
         console.log('[VG] Buy Leads loaded:', buyLeads.length, 'records');
         loaded = true;
@@ -2114,7 +2135,7 @@ function renderAllLeads() {
       if(!hay.includes(search)) return false;
     }
     return true;
-  }).sort((a,b)=>b.date.localeCompare(a.date));
+  }); // Note: sorted once after load
 
   // KPIs
   const uniqueP = new Set(filtered.map(l=>l.phone||l.fullname).filter(Boolean)).size;
@@ -2163,15 +2184,52 @@ function renderAllLeads() {
   if(info) info.textContent=`Showing ${start+1}–${Math.min(start+BL_PAGE_SIZE,filtered.length)} of ${filtered.length} leads`;
   const pageBtns=document.getElementById('blPageBtns');
   if(pageBtns) {
-    pageBtns.innerHTML='';
-    for(let p=1;p<=totalPages;p++){
-      if(totalPages>7&&p>3&&p<totalPages-1&&Math.abs(p-blPage)>1){ if(p===4) pageBtns.innerHTML+='<span style="padding:5px 4px;color:var(--text3)">…</span>'; continue; }
-      const btn=document.createElement('button');
-      btn.className='page-btn'+(p===blPage?' active':'');
-      btn.textContent=p;
-      btn.onclick=()=>{blPage=p;renderAllLeads();};
-      pageBtns.appendChild(btn);
-    }
+    // Smart pagination — prev/next + first/last + nearby pages only (max ~7 buttons)
+    const pages = [];
+    pages.push(1);
+    if(blPage > 3) pages.push('...');
+    for(let p=Math.max(2,blPage-1); p<=Math.min(totalPages-1,blPage+1); p++) pages.push(p);
+    if(blPage < totalPages-2) pages.push('...');
+    if(totalPages > 1) pages.push(totalPages);
+
+    pageBtns.innerHTML = '';
+    // Prev button
+    const prev = document.createElement('button');
+    prev.className = 'page-btn'; prev.textContent = '←';
+    prev.disabled = blPage===1;
+    prev.onclick = ()=>{ if(blPage>1){blPage--;renderAllLeads();} };
+    pageBtns.appendChild(prev);
+
+    pages.forEach(p=>{
+      if(p==='...'){
+        const sp=document.createElement('span');
+        sp.textContent='…'; sp.style.cssText='padding:5px 4px;color:var(--text3)';
+        pageBtns.appendChild(sp);
+      } else {
+        const btn=document.createElement('button');
+        btn.className='page-btn'+(p===blPage?' active':'');
+        btn.textContent=p;
+        btn.onclick=()=>{blPage=p;renderAllLeads();};
+        pageBtns.appendChild(btn);
+      }
+    });
+
+    // Next button
+    const next = document.createElement('button');
+    next.className = 'page-btn'; next.textContent = '→';
+    next.disabled = blPage===totalPages;
+    next.onclick = ()=>{ if(blPage<totalPages){blPage++;renderAllLeads();} };
+    pageBtns.appendChild(next);
+
+    // Page jump input
+    const jumpWrap = document.createElement('span');
+    jumpWrap.style.cssText='display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:11px;color:var(--text3)';
+    jumpWrap.innerHTML=`Go to <input type="number" min="1" max="${totalPages}" value="${blPage}" style="width:48px;padding:3px 6px;border:1.5px solid var(--border2);border-radius:6px;font-size:12px;font-family:Poppins,sans-serif"> of ${totalPages}`;
+    jumpWrap.querySelector('input').addEventListener('change',function(){
+      const p=Math.max(1,Math.min(totalPages,parseInt(this.value)||1));
+      blPage=p; renderAllLeads();
+    });
+    pageBtns.appendChild(jumpWrap);
   }
 }
 
