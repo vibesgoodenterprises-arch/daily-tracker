@@ -1149,7 +1149,15 @@ function switchBLTab(sub, btn) {
     if(sc) sc.style.display = 'none';
   }
   if(sub === 'allleads') {
-    if(buyLeads.length === 0) { loadBuyLeads(); } else { renderAllLeads(); }
+    if(buyLeads.length === 0) {
+      loadBuyLeads();
+    } else {
+      // Delay to ensure display:block applied before filling DOM
+      setTimeout(()=>{
+        console.log('[BL] rendering after tab switch, rows:', buyLeads.length);
+        renderAllLeads();
+      }, 80);
+    }
   }
   window.scrollTo(0, 0);
 }
@@ -1957,8 +1965,8 @@ async function loadBuyLeads() {
     try { buyLeads = JSON.parse(localStorage.getItem('vg_buyleads')||'[]'); } catch(x){buyLeads=[];}
   }
   console.log('[BL] Final buyLeads count:', buyLeads.length);
-  // Always render — user may switch to tab later
-  renderAllLeads();
+  // Render with small delay to ensure DOM is ready
+  setTimeout(renderAllLeads, 100);
 }
 
 function normDate(d) {
