@@ -1122,23 +1122,34 @@ function switchSaleTab(sub, btn) {
 }
 
 function switchBLTab(sub, btn) {
+  // Hide all BL pages
   ['bl-submit','bl-allleads'].forEach(id=>{
-    const el=document.getElementById('page-'+id);
-    if(el) { el.classList.remove('active'); el.style.display='none'; }
+    const el = document.getElementById('page-'+id);
+    if(el) { el.classList.remove('active'); el.style.display = 'none'; }
   });
-  document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>t.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  // Also highlight by text match in case btn is null
-  if(!btn) {
-    document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>{
-      if((sub==='submit'&&t.textContent.includes('Submit'))||(sub==='allleads'&&t.textContent.includes('All')))
-        t.classList.add('active');
+  // Update sub-tab highlights
+  document.querySelectorAll('#section-buyleads .sub-tab').forEach(t => t.classList.remove('active'));
+  if(btn) {
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('#section-buyleads .sub-tab').forEach(t => {
+      if(sub==='submit' && t.textContent.includes('Submit')) t.classList.add('active');
+      if(sub==='allleads' && t.textContent.includes('All'))  t.classList.add('active');
     });
   }
+  // Show correct page
   const el = document.getElementById('page-'+sub);
-  if(el) { el.classList.add('active'); el.style.display='block'; }
-  if(sub==='allleads') renderAllLeads();
-  window.scrollTo(0,0);
+  if(el) { el.classList.add('active'); el.style.display = 'block'; }
+
+  // When showing submit form — ensure form-card visible, success hidden
+  if(sub === 'submit') {
+    const fc = document.querySelector('#page-bl-submit .form-card');
+    const sc = document.getElementById('blSuccessScreen');
+    if(fc) fc.style.display = 'block';
+    if(sc) sc.style.display = 'none';
+  }
+  if(sub === 'allleads') renderAllLeads();
+  window.scrollTo(0, 0);
 }
 
 function setNavDate() {
@@ -1917,37 +1928,81 @@ let blPage = 1;
 const BL_PAGE_SIZE = 20;
 
 async function loadBuyLeads() {
-  try {
-    const r = await fetch(CSV_BL_URL + '&nc=' + Date.now());
-    const txt = await r.text();
-    if(!txt || txt.trim().startsWith('<!')) throw new Error('Not CSV');
-    buyLeads = parseBLCSV(txt);
-    localStorage.setItem('vg_buyleads', JSON.stringify(buyLeads));
-    console.log('[VG] Buy Leads loaded:', buyLeads.length);
-  } catch(e) {
-    console.warn('[VG] Buy Leads fetch failed, using localStorage:', e.message);
+  // Try multiple URL formats for Sheet2 (gid=1800189238)
+  const urlsToTry = [
+    CSV_BL_URL + '&nc=' + Date.now(),
+    'https://docs.google.com/spreadsheets/d/1e-H_B_7b8cSji8aXa-3y7A5Reemrnr3IQhb5SoqHXZ0/export?format=csv&id=1e-H_B_7b8cSji8aXa-3y7A5Reemrnr3IQhb5SoqHXZ0&gid=1800189238&nc=' + Date.now(),
+  ];
+  let loaded = false;
+  for(const url of urlsToTry) {
+    try {
+      const r = await fetch(url);
+      const txt = await r.text();
+      console.log('[BL] fetch status:', r.status, '| first60:', txt.slice(0,60));
+      if(txt && !txt.trim().startsWith('<!') && !txt.trim().startsWith('<html')) {
+        buyLeads = parseBLCSV(txt);
+        localStorage.setItem('vg_buyleads', JSON.stringify(buyLeads));
+        console.log('[VG] Buy Leads loaded:', buyLeads.length, 'records');
+        loaded = true;
+        break;
+      }
+    } catch(e) {
+      console.warn('[BL] URL failed:', url.slice(0,60), e.message);
+    }
+  }
+  if(!loaded) {
+    console.warn('[VG] All BL URLs failed — using localStorage cache');
     try { buyLeads = JSON.parse(localStorage.getItem('vg_buyleads')||'[]'); } catch(x){buyLeads=[];}
   }
   renderAllLeads();
 }
 
+function normDate(d) {
+  // Convert M/D/YYYY or M/D/YY to YYYY-MM-DD for proper sorting
+  if(!d) return '';
+  if(d.includes('-') && d.length >= 8) return d; // already ISO
+  const parts = d.split('/');
+  if(parts.length === 3) {
+    let [m,day,yr] = parts;
+    if(yr.length===2) yr='20'+yr;
+    return yr+'-'+m.padStart(2,'0')+'-'+day.padStart(2,'0');
+  }
+  return d;
+}
+
 function parseBLCSV(csv) {
   const lines = csv.split('\n').map(l=>l.trim()).filter(Boolean);
-  if(lines.length < 2) return [];
+  if(lines.length < 1) return [];
+  console.log('[BL] header row:', lines[0]);
+  console.log('[BL] total lines:', lines.length);
+
+  // Parse header to find column indices dynamically
+  const headers = parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
+  const idx = {
+    date:     headers.findIndex(h=>h.includes('date')),
+    fullname: headers.findIndex(h=>h.includes('name')||h.includes('full')),
+    product:  headers.findIndex(h=>h.includes('product')),
+    email:    headers.findIndex(h=>h.includes('email') || h.includes('mail')),
+    phone:    headers.findIndex(h=>h.includes('phone')||h.includes('number')||h.includes('contact')||h.includes('num')),
+    emp:      headers.findIndex(h=>h.includes('emp')||h.includes('employee')||h.includes('agent')||h.includes('name')&&h.includes('employee')||h.includes('staff')),
+  };
+  console.log('[BL] column indices:', idx);
+
   const rows = [];
   for(let i=1; i<lines.length; i++) {
     const c = parseCSVLine(lines[i]);
-    if(!c[0]) continue;
-    // Columns: Date | Full Name | Product | Email | Phone | Employee
+    if(!c.some(v=>v)) continue; // skip empty rows
     rows.push({
-      date:     c[0]||'',
-      fullname: c[1]||'',
-      product:  c[2]||'',
-      email:    c[3]||'',
-      phone:    c[4]||'',
-      emp:      c[5]||'',
+      date:     idx.date>=0     ? normDate(c[idx.date]||'') : normDate(c[0]||''),
+      fullname: idx.fullname>=0 ? (c[idx.fullname]||'') : (c[1]||''),
+      product:  idx.product>=0  ? (c[idx.product]||'')  : (c[2]||''),
+      email:    idx.email>=0    ? (c[idx.email]||'')    : (c[3]||''),
+      phone:    idx.phone>=0    ? (c[idx.phone]||'')    : (c[4]||''),
+      emp:      idx.emp>=0      ? (c[idx.emp]||'')      : (c[5]||''),
     });
   }
+  console.log('[BL] parsed rows:', rows.length);
+  if(rows.length>0) console.log('[BL] sample row:', rows[0]);
   return rows;
 }
 
