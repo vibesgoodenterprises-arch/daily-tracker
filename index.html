@@ -1148,7 +1148,9 @@ function switchBLTab(sub, btn) {
     if(fc) fc.style.display = 'block';
     if(sc) sc.style.display = 'none';
   }
-  if(sub === 'allleads') renderAllLeads();
+  if(sub === 'allleads') {
+    if(buyLeads.length === 0) { loadBuyLeads(); } else { renderAllLeads(); }
+  }
   window.scrollTo(0, 0);
 }
 
@@ -1954,6 +1956,8 @@ async function loadBuyLeads() {
     console.warn('[VG] All BL URLs failed — using localStorage cache');
     try { buyLeads = JSON.parse(localStorage.getItem('vg_buyleads')||'[]'); } catch(x){buyLeads=[];}
   }
+  console.log('[BL] Final buyLeads count:', buyLeads.length);
+  // Always render — user may switch to tab later
   renderAllLeads();
 }
 
@@ -1978,14 +1982,17 @@ function parseBLCSV(csv) {
 
   // Parse header to find column indices dynamically
   const headers = parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
+  // Detect columns — be specific to avoid 'full name' matching 'employee name'
   const idx = {
     date:     headers.findIndex(h=>h.includes('date')),
-    fullname: headers.findIndex(h=>h.includes('name')||h.includes('full')),
+    fullname: headers.findIndex(h=>h.includes('full')||(h.includes('name')&&!h.includes('emp')&&!h.includes('employee'))),
     product:  headers.findIndex(h=>h.includes('product')),
-    email:    headers.findIndex(h=>h.includes('email') || h.includes('mail')),
-    phone:    headers.findIndex(h=>h.includes('phone')||h.includes('number')||h.includes('contact')||h.includes('num')),
-    emp:      headers.findIndex(h=>h.includes('emp')||h.includes('employee')||h.includes('agent')||h.includes('name')&&h.includes('employee')||h.includes('staff')),
+    email:    headers.findIndex(h=>h.includes('email')||h.includes('mail')),
+    phone:    headers.findIndex(h=>h==='number'||h.includes('phone')||h.includes('contact')||h==='num'||(h.includes('number')&&!h.includes('employee'))),
+    emp:      headers.findIndex(h=>h.includes('employee')||h.includes('emp name')||h.includes('agent')||h.includes('staff')||h==='emp'),
   };
+  console.log('[BL] headers found:', headers);
+  console.log('[BL] column indices:', idx);
   console.log('[BL] column indices:', idx);
 
   const rows = [];
@@ -2072,6 +2079,9 @@ function resetBLFilters() {
 }
 
 function renderAllLeads() {
+  // Ensure page is visible before rendering
+  const allLeadsPage = document.getElementById('page-bl-allleads');
+  // Render even if page not visible (data will show when user switches)
   const search  = (document.getElementById('blSearch')?.value||'').toLowerCase();
   const empF    = document.getElementById('blEmpFilter')?.value||'';
   const prodF   = document.getElementById('blProductFilter')?.value||'';
@@ -2115,8 +2125,9 @@ function renderAllLeads() {
   const start=(blPage-1)*BL_PAGE_SIZE;
   const pageData=filtered.slice(start,start+BL_PAGE_SIZE);
 
-  const tbody=document.getElementById('blTableBody');
-  if(!tbody) return;
+  const tbodyEl=document.getElementById('blTableBody');
+  if(!tbodyEl) return;
+  const tbody=tbodyEl;
   if(!pageData.length) {
     tbody.innerHTML='<tr><td colspan="5"><div class="no-records"><div class="no-records-icon">🎯</div>No leads found</div></td></tr>';
   } else {
