@@ -112,8 +112,7 @@ nav {
 .btn-settings-nav:hover { background:rgba(255,255,255,0.14); color:#fff; }
 
 /* ── PAGES ── */
-.page { display:none; }
-.page.active { display:block; }
+/* page visibility controlled by JS inline styles */
 
 /* ── ENTRY TAB ── */
 .entry-wrap { max-width:900px; margin:0 auto; padding:32px 20px 80px; }
@@ -544,7 +543,7 @@ nav {
   </div>
 
   <!-- Sale sub-pages -->
-  <div class="page active" id="page-entry">
+  <div class="page" id="page-entry" style="display:block">
   <div class="entry-wrap">
     <div class="page-hero">
       <div>
@@ -724,7 +723,7 @@ nav {
 </div>
 
 <!-- ═══ TAB 2 — EMP REPORT ═══ -->
-<div class="page" id="page-report">
+<div class="page" id="page-report" style="display:none">
   <div class="report-wrap">
     <div class="section-title">👥 Employee Overview</div>
     <div class="emp-cards-grid" id="empCardsGrid"></div>
@@ -748,7 +747,7 @@ nav {
 </div>
 
 <!-- ═══ TAB 3 — PERFORMANCE ═══ -->
-<div class="page" id="page-perf">
+<div class="page" id="page-perf" style="display:none">
   <div class="perf-wrap">
     <div class="perf-hero">
       <div>
@@ -823,7 +822,7 @@ nav {
 </div>
 
 <!-- ═══ TAB 4 — CUSTOMERS RECORD ═══ -->
-<div class="page" id="page-customers">
+<div class="page" id="page-customers" style="display:none">
   <div class="customers-wrap">
 
     <!-- Filters -->
@@ -906,7 +905,7 @@ nav {
   </div>
 
   <!-- Submit Buy Lead -->
-  <div class="page active" id="page-bl-submit">
+  <div class="page" id="page-bl-submit" style="display:none">
     <div class="entry-wrap">
       <div class="page-hero">
         <div>
@@ -977,7 +976,7 @@ nav {
   </div>
 
   <!-- All Buy Leads -->
-  <div class="page" id="page-bl-allleads">
+  <div class="page" id="page-bl-allleads" style="display:none">
     <div class="customers-wrap">
       <!-- Filters -->
       <div class="cust-filters">
@@ -1075,22 +1074,31 @@ let selectedPerfDate = null;
 // ═══════════════════════════════════════════════
 // NAV
 // ═══════════════════════════════════════════════
+function showPage(id) {
+  // Universal show one page, hide others in same group
+  const allSale = ['page-entry','page-report','page-perf','page-customers'];
+  const allBL   = ['page-bl-submit','page-bl-allleads'];
+  const allPages = [...allSale, ...allBL];
+  allPages.forEach(pid => {
+    const el = document.getElementById(pid);
+    if(el) el.style.display = pid===id ? 'block' : 'none';
+  });
+}
+
 function switchTab(tab) {
+  // Nav tabs
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   const idx = {sale:0, buyleads:1};
   document.querySelectorAll('.nav-tab')[idx[tab]||0].classList.add('active');
-  document.getElementById('section-sale').style.display     = tab==='sale'     ? 'block':'none';
-  document.getElementById('section-buyleads').style.display = tab==='buyleads' ? 'block':'none';
+  // Sections
+  document.getElementById('section-sale').style.display     = tab==='sale'     ? 'block' : 'none';
+  document.getElementById('section-buyleads').style.display = tab==='buyleads' ? 'block' : 'none';
   if(tab==='sale') {
-    switchSaleTab('entry', document.querySelector('#section-sale .sub-tab'));
+    showPage('page-entry');
+    document.querySelectorAll('#section-sale .sub-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   }
   if(tab==='buyleads') {
-    // Make sure submit form is visible
-    const submitPage = document.getElementById('page-bl-submit');
-    const allPage    = document.getElementById('page-bl-allleads');
-    if(submitPage) { submitPage.style.display='block'; submitPage.classList.add('active'); }
-    if(allPage)    { allPage.style.display='none';     allPage.classList.remove('active'); }
-    // Make sure form-card is visible, success hidden
+    showPage('page-bl-submit');
     const fc = document.querySelector('#page-bl-submit .form-card');
     const sc = document.getElementById('blSuccessScreen');
     if(fc) fc.style.display='block';
@@ -1122,44 +1130,26 @@ function switchSaleTab(sub, btn) {
 }
 
 function switchBLTab(sub, btn) {
-  // Hide all BL pages
-  ['bl-submit','bl-allleads'].forEach(id=>{
-    const el = document.getElementById('page-'+id);
-    if(el) { el.classList.remove('active'); el.style.display = 'none'; }
-  });
-  // Update sub-tab highlights
-  document.querySelectorAll('#section-buyleads .sub-tab').forEach(t => t.classList.remove('active'));
-  if(btn) {
-    btn.classList.add('active');
-  } else {
-    document.querySelectorAll('#section-buyleads .sub-tab').forEach(t => {
-      if(sub==='submit' && t.textContent.includes('Submit')) t.classList.add('active');
-      if(sub==='allleads' && t.textContent.includes('All'))  t.classList.add('active');
+  showPage('page-bl-'+sub);
+  document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) { btn.classList.add('active'); }
+  else {
+    document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>{
+      if(sub==='submit'   && t.textContent.includes('Submit')) t.classList.add('active');
+      if(sub==='allleads' && t.textContent.includes('All'))    t.classList.add('active');
     });
   }
-  // Show correct page
-  const el = document.getElementById('page-'+sub);
-  if(el) { el.classList.add('active'); el.style.display = 'block'; }
-
-  // When showing submit form — ensure form-card visible, success hidden
-  if(sub === 'submit') {
+  if(sub==='submit') {
     const fc = document.querySelector('#page-bl-submit .form-card');
     const sc = document.getElementById('blSuccessScreen');
-    if(fc) fc.style.display = 'block';
-    if(sc) sc.style.display = 'none';
+    if(fc) fc.style.display='block';
+    if(sc) sc.style.display='none';
   }
-  if(sub === 'allleads') {
-    if(buyLeads.length === 0) {
-      loadBuyLeads();
-    } else {
-      // Delay to ensure display:block applied before filling DOM
-      setTimeout(()=>{
-        console.log('[BL] rendering after tab switch, rows:', buyLeads.length);
-        renderAllLeads();
-      }, 80);
-    }
+  if(sub==='allleads') {
+    renderAllLeads();
+    if(buyLeads.length===0) loadBuyLeads();
   }
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
 function setNavDate() {
@@ -1986,8 +1976,8 @@ async function loadBuyLeads() {
     try { buyLeads = JSON.parse(localStorage.getItem('vg_buyleads')||'[]'); } catch(x){buyLeads=[];}
   }
   console.log('[BL] Final buyLeads count:', buyLeads.length);
-  // Render with small delay to ensure DOM is ready
-  setTimeout(renderAllLeads, 100);
+  // Re-render to replace loading state with actual data
+  renderAllLeads();
 }
 
 function normDate(d) {
@@ -2158,7 +2148,10 @@ function renderAllLeads() {
   if(!tbodyEl) return;
   const tbody=tbodyEl;
   if(!pageData.length) {
-    tbody.innerHTML='<tr><td colspan="5"><div class="no-records"><div class="no-records-icon">🎯</div>No leads found</div></td></tr>';
+    const emptyMsg = buyLeads.length === 0
+      ? '<div class="no-records"><div class="no-records-icon">⏳</div><div style="font-size:13px;font-weight:600;margin-bottom:6px">Loading leads...</div><div style="font-size:12px;color:var(--text3)">Fetching from Google Sheet</div></div>'
+      : '<div class="no-records"><div class="no-records-icon">🎯</div>No leads found</div>';
+    tbody.innerHTML=`<tr><td colspan="5">${emptyMsg}</td></tr>`;
   } else {
     tbody.innerHTML=pageData.map((l,i)=>{
       const ini=(l.fullname||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -2237,6 +2230,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setNavDate();
   document.getElementById('f_date').value = todayStr;
   document.getElementById('bl_date').value = todayStr;
+  // Render empty structure immediately so tabs always show something
+  renderAllLeads();
+  renderCustomers();
   await loadFromSheet();
   await loadBuyLeads();
   startAutoSync();
