@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibes Good — Order Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f7f4ef;
+  --surface:  #ffffff;
+  --card:     #ffffff;
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.14);
+  --text:     #111111;
+  --text2:    #555555;
+  --text3:    #999999;
+  --accent:   #d4a843;
+  --accent2:  #b8883a;
+  --green:    #2d9e6b;
+  --red:      #e04040;
+  --amber:    #e8a020;
+  --blue:     #3b6cf7;
+  --purple:   #7c3aed;
+  --nav-h:    64px;
+  --r:        14px;
+  --r2:       20px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.07);
+  --shadow2:  0 8px 40px rgba(0,0,0,0.12);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  font-family:'Poppins',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-size:14px;
+}
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  height:var(--nav-h);
+  background:var(--text);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 28px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.25);
+}
+
+.nav-brand {
+  display:flex; align-items:center; gap:12px;
+}
+.nav-logo {
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),#f0c96e);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Poppins',sans-serif; font-weight:800; font-size:16px; color:#111;
+}
+.nav-title {
+  font-family:'Poppins',sans-serif; font-weight:800; font-size:18px;
+  color:#ffffff; letter-spacing:-0.3px;
+}
+.nav-sub { font-size:10px; color:rgba(255,255,255,0.45); font-weight:400; margin-top:1px; }
+
+.nav-tabs { display:flex; gap:4px; }
+.sub-tabs-bar {
+  background:rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex; gap:0; padding:0 28px;
+}
+.sub-tab {
+  padding:10px 20px; font-size:12px; font-weight:600; cursor:pointer;
+  color:rgba(255,255,255,0.45); border-bottom:2px solid transparent;
+  transition:all .2s; font-family:'Poppins',sans-serif; border:none; background:none;
+}
+.sub-tab.active { color:var(--accent); border-bottom:2px solid var(--accent); }
+.sub-tab:hover:not(.active) { color:rgba(255,255,255,0.75); }
+.nav-tab {
+  padding:8px 18px; border-radius:8px;
+  font-family:'Poppins',sans-serif; font-size:13px; font-weight:600;
+  color:rgba(255,255,255,0.55); cursor:pointer; transition:all .2s;
+  border:none; background:transparent;
+}
+.nav-tab.active { background:var(--accent); color:#111; }
+.nav-tab:hover:not(.active) { background:rgba(255,255,255,0.08); color:#fff; }
+
+.nav-right { display:flex; align-items:center; gap:10px; }
+.nav-date { font-size:12px; color:rgba(255,255,255,0.45); font-weight:500; }
+.sync-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.7);
+  font-size:12px; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif;
+  transition:all .2s;
+}
+.sync-btn:hover { background:rgba(255,255,255,0.16); color:#fff; border-color:rgba(255,255,255,0.3); }
+.sync-btn.syncing svg { animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.sync-badge {
+  font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px;
+}
+.sync-badge.ok   { background:rgba(45,158,107,0.2); color:#4ade80; }
+.sync-badge.err  { background:rgba(224,64,64,0.2);  color:#f87171; }
+.sync-badge.load { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.4); }
+.btn-settings-nav {
+  width:34px; height:34px; border-radius:8px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.6); cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.btn-settings-nav:hover { background:rgba(255,255,255,0.14); color:#fff; }
+
+/* ── PAGES ── */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ── ENTRY TAB ── */
+.entry-wrap { max-width:900px; margin:0 auto; padding:32px 20px 80px; }
+
+.page-hero {
+  background:linear-gradient(135deg,var(--text) 0%,#2a2a2a 100%);
+  border-radius:var(--r2); padding:28px 32px; margin-bottom:28px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+}
+.page-hero h1 { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:#fff; }
+.page-hero p  { font-size:13px; color:rgba(255,255,255,0.5); margin-top:4px; }
+.hero-badge {
+  background:var(--accent); color:#111; font-size:11px; font-weight:700;
+  padding:6px 14px; border-radius:20px; font-family:'Poppins',sans-serif;
+}
+
+.selector-wrap {
+  background:var(--card); border-radius:var(--r2); padding:24px;
+  border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:24px;
+}
+.f-label {
+  display:block; font-size:11px; font-weight:600; color:var(--accent2);
+  text-transform:uppercase; letter-spacing:0.7px; margin-bottom:8px;
+}
+.f-select {
+  width:100%; border:2px solid var(--border2); border-radius:10px;
+  padding:11px 14px; font-size:15px; font-weight:600; color:var(--text);
+  background:var(--bg); font-family:'Poppins',sans-serif; cursor:pointer;
+  transition:border-color .2s; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+}
+.f-select:focus { outline:none; border-color:var(--accent); }
+.f-input {
+  width:100%; border:2px solid var(--border2); border-radius:10px;
+  padding:11px 14px; font-size:14px; font-weight:500; color:var(--text);
+  background:var(--bg); font-family:'Poppins',sans-serif; transition:border-color .2s;
+}
+.f-input:focus { outline:none; border-color:var(--accent); background:#fff; }
+.f-input.req { border-color:rgba(212,168,67,0.35); }
+.req-star { color:var(--red); margin-left:2px; }
+
+/* Colab multi-select */
+.colab-wrap {
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;
+}
+.colab-chip {
+  padding:7px 14px; border-radius:8px; border:2px solid var(--border2);
+  background:var(--bg); font-size:13px; font-weight:600; cursor:pointer;
+  transition:all .15s; font-family:'Poppins',sans-serif; color:var(--text2);
+}
+.colab-chip.selected { background:var(--accent); border-color:var(--accent); color:#111; }
+
+/* Form */
+.form-card {
+  background:var(--card); border-radius:var(--r2); padding:28px;
+  border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:20px;
+}
+.form-card-header {
+  display:flex; align-items:center; gap:10px; margin-bottom:20px;
+  padding-bottom:14px; border-bottom:2px solid var(--bg);
+}
+.form-card-icon {
+  width:34px; height:34px; border-radius:9px;
+  background:linear-gradient(135deg,var(--accent),#f0c96e);
+  display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+}
+.form-card-title { font-family:'Poppins',sans-serif; font-size:14px; font-weight:700; color:var(--text); }
+
+.fields-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.fields-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+@media(max-width:700px) { .fields-grid-2,.fields-grid-3 { grid-template-columns:1fr; } }
+.span-2 { grid-column:span 2; }
+@media(max-width:700px) { .span-2 { grid-column:span 1; } }
+
+.f-group { display:flex; flex-direction:column; gap:6px; }
+
+/* Qty + pills suffix */
+.qty-wrap { display:flex; align-items:center; gap:0; }
+.qty-wrap .f-input { border-radius:10px 0 0 10px; }
+.qty-suffix {
+  padding:11px 14px; background:var(--accent); color:#111;
+  font-weight:700; font-size:13px; border-radius:0 10px 10px 0;
+  border:2px solid var(--accent); border-left:none; white-space:nowrap;
+}
+
+/* Currency + amount */
+.amount-wrap { display:flex; gap:0; }
+.currency-select {
+  padding:11px 10px; background:var(--bg); border:2px solid var(--border2);
+  border-right:none; border-radius:10px 0 0 10px; font-size:13px; font-weight:700;
+  color:var(--text); cursor:pointer; font-family:'Poppins',sans-serif;
+}
+.currency-select:focus { outline:none; }
+.amount-wrap .f-input { border-radius:0 10px 10px 0; }
+
+/* Phone */
+.phone-wrap { display:flex; gap:0; }
+.phone-code {
+  padding:11px 10px; background:var(--bg); border:2px solid var(--border2);
+  border-right:none; border-radius:10px 0 0 10px; font-size:13px; font-weight:700;
+  color:var(--text); cursor:pointer; font-family:'Poppins',sans-serif; min-width:80px;
+}
+.phone-code:focus { outline:none; }
+.phone-wrap .f-input { border-radius:0 10px 10px 0; }
+
+/* Status badge select */
+.status-select-wrap { position:relative; }
+.status-badge-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.status-badge {
+  padding:7px 14px; border-radius:8px; border:2px solid var(--border2);
+  font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  font-family:'Poppins',sans-serif;
+}
+.status-badge.sel-delivered { background:#d1fae5; border-color:#10b981; color:#065f46; }
+.status-badge.sel-transit   { background:#dbeafe; border-color:#3b82f6; color:#1e40af; }
+.status-badge.sel-pending   { background:#fef9c3; border-color:#f59e0b; color:#78350f; }
+.status-badge.sel-returned  { background:#fee2e2; border-color:#ef4444; color:#991b1b; }
+.status-badge.sel-cancelled { background:#f3f4f6; border-color:#6b7280; color:#374151; }
+.status-badge.sel-other     { background:#ede9fe; border-color:#7c3aed; color:#4c1d95; }
+.status-badge:not([class*="sel-"]) { color:var(--text2); }
+.status-badge:not([class*="sel-"]):hover { border-color:var(--accent); }
+
+/* Submit */
+.submit-row { display:flex; justify-content:flex-end; margin-top:24px; }
+.btn-submit {
+  padding:14px 36px; border-radius:12px; border:none; cursor:pointer;
+  font-family:'Poppins',sans-serif; font-size:15px; font-weight:700;
+  background:linear-gradient(135deg,var(--text),#333);
+  color:var(--accent); letter-spacing:0.3px; transition:all .2s;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+}
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.25); }
+
+.success-screen {
+  display:none; text-align:center; padding:60px 20px;
+  background:var(--card); border-radius:var(--r2); border:1px solid var(--border);
+}
+.success-screen.show { display:block; }
+.success-icon { font-size:56px; margin-bottom:16px; }
+.success-title { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:var(--text); margin-bottom:8px; }
+.success-sub { font-size:14px; color:var(--text2); }
+
+/* ── REPORT TAB ── */
+.report-wrap { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
+.section-title {
+  font-family:'Poppins',sans-serif; font-size:18px; font-weight:800;
+  color:var(--text); margin-bottom:20px; display:flex; align-items:center; gap:10px;
+}
+.section-title::after { content:''; flex:1; height:2px; background:linear-gradient(90deg,var(--border2),transparent); }
+
+/* Emp cards */
+.emp-cards-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px; margin-bottom:36px;
+}
+.emp-card-vg {
+  background:var(--card); border-radius:var(--r2); padding:24px 20px;
+  border:2px solid var(--border); text-align:center;
+  box-shadow:var(--shadow); cursor:pointer; transition:all .22s;
+  position:relative; overflow:hidden;
+}
+.emp-card-vg::before {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,var(--accent),#f0c96e); transform:scaleX(0);
+  transition:transform .22s; transform-origin:left;
+}
+.emp-card-vg:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:var(--shadow2); }
+.emp-card-vg:hover::before { transform:scaleX(1); }
+.emp-avatar {
+  width:60px; height:60px; border-radius:50%; margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--text),#444);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:var(--accent);
+}
+.emp-card-name { font-family:'Poppins',sans-serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.emp-card-role { font-size:11px; color:var(--text3); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+.emp-card-count { margin-top:14px; font-size:26px; font-weight:800; color:var(--accent); font-family:'Poppins',sans-serif; }
+.emp-card-count-lbl { font-size:10px; color:var(--text3); font-weight:500; }
+
+/* Detail panel */
+.emp-detail-panel {
+  display:none; background:var(--card); border-radius:var(--r2);
+  border:1px solid var(--border); box-shadow:var(--shadow2); padding:28px; margin-bottom:32px;
+}
+.emp-detail-panel.open { display:block; }
+.panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.panel-title { font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; }
+.btn-close-panel {
+  width:34px; height:34px; border-radius:8px; background:var(--bg);
+  border:1px solid var(--border); cursor:pointer; font-size:18px; color:var(--text2);
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.btn-close-panel:hover { background:var(--text); color:#fff; }
+
+.stats-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+.stat-box {
+  background:var(--bg); border-radius:14px; padding:18px;
+  text-align:center; border:1px solid var(--border);
+}
+.stat-box-val { font-family:'Poppins',sans-serif; font-size:28px; font-weight:800; color:var(--text); }
+.stat-box-lbl { font-size:11px; color:var(--text3); font-weight:500; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
+
+.cmp-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+.cmp-box {
+  background:var(--bg); border-radius:14px; padding:16px 18px; border:1px solid var(--border);
+}
+.cmp-box-lbl { font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+.cmp-nums { display:flex; align-items:center; gap:10px; }
+.cmp-now { font-family:'Poppins',sans-serif; font-size:24px; font-weight:800; color:var(--text); }
+.cmp-vs  { font-size:11px; color:var(--text3); }
+.cmp-then{ font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; color:var(--text3); }
+.cmp-delta { display:inline-block; margin-top:8px; font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; }
+.cmp-delta.up   { background:#d1fae5; color:#065f46; }
+.cmp-delta.down { background:#fee2e2; color:#991b1b; }
+.cmp-delta.same { background:var(--bg); color:var(--text3); }
+
+/* Date table */
+.date-table { width:100%; border-collapse:collapse; font-size:13px; }
+.date-table th { background:var(--text); color:var(--accent); padding:10px 14px; text-align:left; font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.date-table td { padding:10px 14px; border-bottom:1px solid var(--border); }
+.date-table tr:hover td { background:var(--bg); }
+
+/* Bar chart */
+.bar-chart { display:flex; flex-direction:column; gap:8px; }
+.bar-row { display:flex; align-items:center; gap:10px; }
+.bar-lbl { font-size:12px; font-weight:600; color:var(--text2); width:70px; flex-shrink:0; text-align:right; }
+.bar-track { flex:1; height:22px; background:var(--bg); border-radius:6px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,var(--accent),#f0c96e); transition:width .5s; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; }
+.bar-fill span { font-size:11px; font-weight:700; color:#111; }
+
+/* ── PERFORMANCE TAB ── */
+.perf-wrap { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
+
+.perf-hero {
+  background:linear-gradient(135deg,var(--text) 0%,#1a1a1a 100%);
+  border-radius:var(--r2); padding:32px; margin-bottom:32px;
+  display:grid; grid-template-columns:1fr auto; gap:20px; align-items:center;
+}
+.perf-hero-title { font-family:'Poppins',sans-serif; font-size:28px; font-weight:800; color:#fff; margin-bottom:6px; }
+.perf-hero-sub { font-size:13px; color:rgba(255,255,255,0.45); }
+.perf-kpi-row { display:flex; gap:14px; }
+.perf-kpi-mini { text-align:center; }
+.perf-kpi-mini-val { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:var(--accent); }
+.perf-kpi-mini-lbl { font-size:10px; color:rgba(255,255,255,0.35); font-weight:500; }
+
+/* Top 3 */
+.top3-row { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:32px; }
+@media(max-width:700px) { .top3-row { grid-template-columns:1fr; } }
+.top3-card {
+  background:var(--card); border-radius:var(--r2); padding:28px 20px;
+  text-align:center; border:2px solid var(--border); box-shadow:var(--shadow);
+  position:relative; overflow:hidden; transition:transform .2s;
+}
+.top3-card:hover { transform:translateY(-3px); }
+.top3-card.gold   { border-color:#f59e0b; background:linear-gradient(160deg,#fffbeb,#fff); }
+.top3-card.silver { border-color:#94a3b8; background:linear-gradient(160deg,#f8fafc,#fff); }
+.top3-card.bronze { border-color:#f97316; background:linear-gradient(160deg,#fff8f5,#fff); }
+.top3-medal { font-size:36px; margin-bottom:10px; display:block; }
+.top3-avatar {
+  width:64px; height:64px; border-radius:50%; margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--text),#444);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Poppins',sans-serif; font-size:24px; font-weight:800; color:var(--accent);
+}
+.top3-name { font-family:'Poppins',sans-serif; font-size:15px; font-weight:800; color:var(--text); margin-bottom:4px; }
+.top3-score { font-family:'Poppins',sans-serif; font-size:32px; font-weight:900; color:var(--accent); margin:8px 0 2px; }
+.top3-score-lbl { font-size:10px; color:var(--text3); }
+
+/* Achievement cards */
+.ach-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:32px; }
+.ach-card {
+  background:var(--card); border-radius:16px; padding:18px 16px;
+  border:1px solid var(--border); text-align:center; box-shadow:var(--shadow);
+}
+.ach-icon { font-size:28px; margin-bottom:8px; }
+.ach-val { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:var(--text); }
+.ach-lbl { font-size:11px; color:var(--text3); font-weight:500; margin-top:4px; }
+
+/* Perf table */
+.perf-table { width:100%; border-collapse:collapse; font-size:13px; }
+.perf-table th { background:var(--text); color:var(--accent); padding:12px 16px; text-align:left; font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.perf-table td { padding:12px 16px; border-bottom:1px solid var(--border); }
+.perf-table tr:hover td { background:var(--bg); }
+.perf-table .rank { font-family:'Poppins',sans-serif; font-weight:800; color:var(--text3); }
+.emp-cell { display:flex; align-items:center; gap:10px; }
+.mini-av { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--text),#444); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--accent); font-family:'Poppins',sans-serif; flex-shrink:0; }
+.score-bar-wrap { height:5px; background:var(--border); border-radius:3px; margin-top:4px; overflow:hidden; min-width:80px; }
+.score-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),#f0c96e); }
+
+/* Date toggle */
+.date-toggle-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.dt-btn {
+  padding:6px 14px; border-radius:8px; border:1.5px solid var(--border2);
+  background:var(--bg); font-size:12px; font-weight:600; cursor:pointer;
+  font-family:'Poppins',sans-serif; color:var(--text2); transition:all .15s;
+}
+.dt-btn.active { background:var(--text); color:var(--accent); border-color:var(--text); }
+
+/* Toast */
+.vg-toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+  padding:12px 24px; border-radius:12px; font-family:'Poppins',sans-serif;
+  font-size:13px; font-weight:600; z-index:9999;
+  opacity:0; transition:all .3s; pointer-events:none; white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+}
+.vg-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.vg-toast.ok   { background:#111; color:var(--accent); }
+.vg-toast.err  { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+
+/* Admin modal */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center;
+}
+.modal-overlay.show { display:flex; }
+.modal-box {
+  background:var(--card); border-radius:var(--r2); padding:32px;
+  width:100%; max-width:420px; box-shadow:var(--shadow2);
+}
+.modal-title { font-family:'Poppins',sans-serif; font-size:18px; font-weight:800; margin-bottom:6px; }
+.modal-sub   { font-size:13px; color:var(--text2); margin-bottom:20px; }
+.modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+.btn-cancel { padding:10px 20px; border-radius:10px; border:1.5px solid var(--border2); background:var(--bg); font-size:13px; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; }
+.btn-confirm { padding:10px 24px; border-radius:10px; background:var(--text); color:var(--accent); border:none; font-size:13px; font-weight:700; cursor:pointer; font-family:'Poppins',sans-serif; }
+
+/* Settings modal */
+#settingsModal .modal-box { max-width:480px; }
+
+/* ── CUSTOMERS TAB ── */
+.customers-wrap { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
+
+.cust-filters {
+  background:var(--card); border-radius:var(--r2); padding:20px 24px;
+  border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:24px;
+  display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;
+}
+.cust-filter-group { display:flex; flex-direction:column; gap:6px; flex:1; min-width:150px; }
+.cust-filter-group label { font-size:10px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:0.6px; }
+.cust-filter-group select,
+.cust-filter-group input { padding:9px 12px; border:1.5px solid var(--border2); border-radius:9px; font-size:13px; font-weight:500; color:var(--text); background:var(--bg); font-family:'Poppins',sans-serif; }
+.cust-filter-group select:focus,
+.cust-filter-group input:focus { outline:none; border-color:var(--accent); }
+.btn-reset-filter { padding:9px 18px; border-radius:9px; background:var(--bg); border:1.5px solid var(--border2); font-size:13px; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; color:var(--text2); transition:all .2s; white-space:nowrap; }
+.btn-reset-filter:hover { border-color:var(--accent); color:var(--accent2); }
+
+.cust-summary-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+@media(max-width:700px){ .cust-summary-row { grid-template-columns:repeat(2,1fr); } }
+.cust-kpi {
+  background:var(--card); border-radius:16px; padding:18px 20px;
+  border:1px solid var(--border); box-shadow:var(--shadow);
+  border-left:4px solid var(--accent);
+}
+.cust-kpi-val { font-family:'Poppins',sans-serif; font-size:26px; font-weight:800; color:var(--text); line-height:1; }
+.cust-kpi-lbl { font-size:11px; color:var(--text3); font-weight:500; margin-top:5px; text-transform:uppercase; letter-spacing:0.4px; }
+
+.cust-table-wrap { background:var(--card); border-radius:var(--r2); overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow); }
+.cust-table { width:100%; border-collapse:collapse; font-size:13px; }
+.cust-table th { background:var(--text); color:var(--accent); padding:12px 16px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+.cust-table td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.cust-table tr:last-child td { border-bottom:none; }
+.cust-table tr:hover td { background:var(--bg); }
+.cust-name-cell { display:flex; align-items:center; gap:10px; }
+.cust-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--text),#333); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--accent); font-family:'Poppins',sans-serif; flex-shrink:0; }
+.cust-name { font-weight:600; font-size:13px; }
+.cust-phone { font-size:11px; color:var(--text3); margin-top:1px; }
+.status-pill { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.sp-delivered { background:#d1fae5; color:#065f46; }
+.sp-transit   { background:#dbeafe; color:#1e40af; }
+.sp-pending   { background:#fef9c3; color:#78350f; }
+.sp-returned  { background:#fee2e2; color:#991b1b; }
+.sp-cancelled { background:#f3f4f6; color:#374151; }
+.sp-other     { background:#ede9fe; color:#4c1d95; }
+.sp-default   { background:#f3f4f6; color:#374151; }
+.emp-tag { display:inline-block; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:600; background:rgba(212,168,67,0.15); color:var(--accent2); border:1px solid rgba(212,168,67,0.25); }
+.no-records { text-align:center; padding:60px 20px; color:var(--text3); }
+.no-records-icon { font-size:40px; margin-bottom:12px; }
+.pagination-row { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:12px; color:var(--text3); }
+.page-btns { display:flex; gap:6px; }
+.page-btn { padding:5px 12px; border-radius:7px; border:1.5px solid var(--border2); background:var(--bg); font-size:12px; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; color:var(--text2); transition:all .15s; }
+.page-btn.active { background:var(--text); color:var(--accent); border-color:var(--text); }
+.page-btn:hover:not(.active) { border-color:var(--accent); }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.12); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">VG</div>
+    <div>
+      <div class="nav-title">Vibes Good</div>
+      <div class="nav-sub">Order Tracker</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('sale')">📋 Sale Report</button>
+    <button class="nav-tab" onclick="switchTab('buyleads')">🎯 Buy Leads</button>
+  </div>
+  <div class="nav-right">
+    <div class="sync-badge load" id="syncBadge">Syncing…</div>
+    <button class="sync-btn" id="syncBtn" onclick="manualSync()">
+      <svg id="syncIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Sync
+    </button>
+    <div class="nav-date" id="navDate"></div>
+    <button class="btn-settings-nav" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</nav>
+
+<div id="vgToast" class="vg-toast"></div>
+
+<!-- ═══ TAB 1 — DATA ENTRY ═══ -->
+<!-- ═══ SALE REPORT SECTION ═══ -->
+<div id="section-sale" style="display:block">
+  <!-- Sub-tabs bar -->
+  <div class="sub-tabs-bar" style="background:var(--text)">
+    <button class="sub-tab active" onclick="switchSaleTab('entry',this)">📋 Data Entry</button>
+    <button class="sub-tab" onclick="switchSaleTab('report',this)">📊 Emp Report</button>
+    <button class="sub-tab" onclick="switchSaleTab('perf',this)">🏆 Performance</button>
+    <button class="sub-tab" onclick="switchSaleTab('customers',this)">👥 Customers</button>
+  </div>
+
+  <!-- Sale sub-pages -->
+  <div class="page active" id="page-entry">
+  <div class="entry-wrap">
+    <div class="page-hero">
+      <div>
+        <h1>Daily Order Entry</h1>
+        <p>Fill in order details and submit. Multiple entries per day allowed.</p>
+      </div>
+      <div class="hero-badge" id="heroBadge">Select Employee →</div>
+    </div>
+
+    <!-- Employee selector -->
+    <div class="selector-wrap">
+      <label class="f-label">Select Employee <span class="req-star">*</span></label>
+      <select class="f-select" id="empSelect" onchange="onEmpChange()">
+        <option value="">— Choose your name —</option>
+        <option value="Lisa">Lisa</option>
+        <option value="Susan">Susan</option>
+        <option value="Rachel">Rachel</option>
+        <option value="Bella">Bella</option>
+        <option value="Alex">Alex</option>
+        <option value="colab">🤝 Colab (Multiple Employees)</option>
+      </select>
+
+      <!-- Colab multi-select -->
+      <div id="colabWrap" style="display:none;margin-top:16px;">
+        <label class="f-label">Select All Collaborating Employees</label>
+        <div class="colab-wrap">
+          <div class="colab-chip" data-name="Lisa" onclick="toggleColab(this)">Lisa</div>
+          <div class="colab-chip" data-name="Susan" onclick="toggleColab(this)">Susan</div>
+          <div class="colab-chip" data-name="Rachel" onclick="toggleColab(this)">Rachel</div>
+          <div class="colab-chip" data-name="Bella" onclick="toggleColab(this)">Bella</div>
+          <div class="colab-chip" data-name="Alex" onclick="toggleColab(this)">Alex</div>
+        </div>
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px;">
+          <button onclick="proceedColab()" style="padding:11px 28px;border-radius:10px;background:var(--text);color:var(--accent);border:none;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;font-size:14px;transition:all .2s">
+            Continue → Fill Order Details
+          </button>
+          <span id="colabSelectedNames" style="font-size:12px;color:var(--text3);font-weight:500"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success screen -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Entry Submitted!</div>
+      <div class="success-sub">Order recorded successfully.</div>
+      <button onclick="addAnotherEntry()" style="margin-top:20px;padding:11px 28px;border-radius:10px;background:var(--text);color:var(--accent);border:none;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;font-size:14px">+ Add Another Entry</button>
+    </div>
+
+    <!-- Multiple entries per day allowed — no already-submitted check -->
+
+    <!-- Entry form -->
+    <div id="entryForm" style="display:none;">
+
+      <!-- Order Details -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon">📦</div>
+          <div class="form-card-title">Order Details</div>
+        </div>
+        <div class="fields-grid-2" style="gap:16px;">
+          <div class="f-group">
+            <label class="f-label">Source</label>
+            <input class="f-input" id="f_source" type="text" placeholder="e.g. Instagram, Website, WhatsApp">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Date <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_date" type="date">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Vendor <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_vendor" type="text" placeholder="Vendor name">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Tracking Number</label>
+            <input class="f-input" id="f_tracking" type="text" placeholder="Alphanumeric tracking ID">
+          </div>
+          <div class="f-group span-2">
+            <label class="f-label">Tracking Status</label>
+            <div class="status-badge-row" id="statusBadges">
+              <div class="status-badge" onclick="selectStatus(this,'Delivered')">✅ Delivered</div>
+              <div class="status-badge" onclick="selectStatus(this,'In Transit')">🚚 In Transit</div>
+              <div class="status-badge" onclick="selectStatus(this,'Pending')">⏳ Pending</div>
+              <div class="status-badge" onclick="selectStatus(this,'Returned')">↩ Returned</div>
+              <div class="status-badge" onclick="selectStatus(this,'Cancelled')">❌ Cancelled</div>
+              <div class="status-badge" onclick="selectStatus(this,'Other')">📌 Other</div>
+            </div>
+            <input class="f-input" id="f_status" type="text" placeholder="Or type custom status…" style="margin-top:8px">
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Info -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon">👤</div>
+          <div class="form-card-title">Customer Information</div>
+        </div>
+        <div class="fields-grid-2">
+          <div class="f-group">
+            <label class="f-label">Full Name</label>
+            <input class="f-input" id="f_fullname" type="text" placeholder="Customer full name">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Email ID</label>
+            <input class="f-input" id="f_email" type="email" placeholder="customer@email.com">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Contact Number <span class="req-star">*</span></label>
+            <div class="phone-wrap">
+              <select class="phone-code req" id="f_phone_code">
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+65">🇸🇬 +65</option>
+                <option value="+60">🇲🇾 +60</option>
+                <option value="+61">🇦🇺 +61</option>
+              </select>
+              <input class="f-input req" id="f_phone" type="tel" placeholder="Phone number">
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Address <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_address" type="text" placeholder="Delivery address">
+          </div>
+        </div>
+      </div>
+
+      <!-- Product & Payment -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon">💊</div>
+          <div class="form-card-title">Product & Payment</div>
+        </div>
+        <div class="fields-grid-3">
+          <div class="f-group">
+            <label class="f-label">Product <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_product" type="text" placeholder="Product name">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Quantity <span class="req-star">*</span></label>
+            <div class="qty-wrap">
+              <input class="f-input req" id="f_qty" type="number" min="1" placeholder="0" style="border-radius:10px 0 0 10px">
+              <div class="qty-suffix">pills</div>
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Total Amount <span class="req-star">*</span></label>
+            <div class="amount-wrap">
+              <select class="currency-select req" id="f_currency">
+                <option value="₹">₹</option>
+                <option value="$">$</option>
+                <option value="£">£</option>
+                <option value="€">€</option>
+                <option value="AED">AED</option>
+              </select>
+              <input class="f-input req" id="f_amount" type="number" min="0" placeholder="0.00" style="border-radius:0 10px 10px 0">
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Payment Type <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_payment" type="text" placeholder="e.g. UPI, COD, Card, Bank Transfer">
+          </div>
+          <div class="f-group span-2">
+            <label class="f-label">Customer Remarks <span class="req-star">*</span></label>
+            <input class="f-input req" id="f_remarks" type="text" placeholder="Any special instructions or notes from customer">
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn-submit" onclick="submitEntry()">🚀 Submit Order Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 2 — EMP REPORT ═══ -->
+<div class="page" id="page-report">
+  <div class="report-wrap">
+    <div class="section-title">👥 Employee Overview</div>
+    <div class="emp-cards-grid" id="empCardsGrid"></div>
+    <div class="emp-detail-panel" id="empDetailPanel">
+      <div class="panel-header">
+        <div class="panel-title" id="panelTitle">—</div>
+        <button class="btn-close-panel" onclick="closePanel()">✕</button>
+      </div>
+      <div class="stats-3" id="panelStats"></div>
+      <div class="cmp-row" id="panelCmp"></div>
+      <div style="margin-bottom:20px">
+        <div class="section-title" style="font-size:14px;margin-bottom:14px">📅 Date-wise Entry Count</div>
+        <div id="panelDateTable"></div>
+      </div>
+      <div>
+        <div class="section-title" style="font-size:14px;margin-bottom:14px">📊 Last 7 Days</div>
+        <div class="bar-chart" id="panelBarChart"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 3 — PERFORMANCE ═══ -->
+<div class="page" id="page-perf">
+  <div class="perf-wrap">
+    <div class="perf-hero">
+      <div>
+        <div class="perf-hero-title">Performance Dashboard</div>
+        <div class="perf-hero-sub">Overall team productivity & achievement tracking</div>
+      </div>
+      <div class="perf-kpi-row" id="perfKpiRow"></div>
+    </div>
+
+    <div class="section-title">🏆 Top Performers</div>
+    <div class="top3-row" id="top3Row"></div>
+
+    <div class="section-title">📈 Achievement Overview</div>
+    <div class="ach-grid" id="achGrid"></div>
+
+    <div class="section-title">📅 Date-wise Performance</div>
+    <div class="date-toggle-row" id="perfDateToggle"></div>
+    <div style="background:var(--card);border-radius:var(--r2);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);margin-bottom:32px;">
+      <table class="perf-table">
+        <thead><tr><th>#</th><th>Employee</th><th>Entries</th><th>Total Qty (pills)</th><th>Total Revenue</th><th>Share</th></tr></thead>
+        <tbody id="perfDateBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">🔄 Comparative Report</div>
+    <div class="cmp-row" id="perfCmpRow"></div>
+
+    <div class="section-title">🗂 All Employees Ranking</div>
+    <div style="background:var(--card);border-radius:var(--r2);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);">
+      <table class="perf-table">
+        <thead><tr><th>#</th><th>Employee</th><th>Total Entries</th><th>This Month</th><th>This Week</th><th>Avg / Day</th><th>Top Product</th></tr></thead>
+        <tbody id="rankingBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN RESET MODAL -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box">
+    <div class="modal-title">🔐 Admin Access Required</div>
+    <div class="modal-sub">Enter the admin password to reset today's entry.</div>
+    <label class="f-label">Password</label>
+    <input class="f-input" id="adminPw" type="password" placeholder="Enter password">
+    <div id="adminPwErr" style="display:none;color:var(--red);font-size:12px;margin-top:6px">❌ Incorrect password</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAdminModal()">Cancel</button>
+      <button class="btn-confirm" onclick="doAdminReset()">Confirm Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-title">⚙ Settings</div>
+    <div class="modal-sub">Configure Google Apps Script Web App URL for data sync.</div>
+    <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 14px;font-size:12px;color:#78350f;margin-bottom:16px">
+      ⚠ <b>For all-device sync:</b> Paste the URL directly in the HTML file at the <code>APPS_SCRIPT_URL</code> line. Settings here saves to this browser only.
+    </div>
+    <label class="f-label">Apps Script Web App URL</label>
+    <input class="f-input" id="settingsUrl" type="text" placeholder="https://script.google.com/macros/s/…/exec">
+    <div id="settingsStatus" style="font-size:11px;margin-top:6px;min-height:16px;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <label class="f-label">Cache</label>
+    <button onclick="clearVGCache()" style="padding:8px 16px;background:#fff3f3;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">🗑 Clear Local Cache & Re-sync</button>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-confirm" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 4 — CUSTOMERS RECORD ═══ -->
+<div class="page" id="page-customers">
+  <div class="customers-wrap">
+
+    <!-- Filters -->
+    <div class="cust-filters">
+      <div class="cust-filter-group">
+        <label>Search Customer</label>
+        <input type="text" id="custSearch" placeholder="Name, phone, email…" oninput="renderCustomers()">
+      </div>
+      <div class="cust-filter-group">
+        <label>Employee</label>
+        <select id="custEmpFilter" onchange="renderCustomers()">
+          <option value="">All Employees</option>
+          <option>Lisa</option><option>Susan</option><option>Rachel</option>
+          <option>Bella</option><option>Alex</option>
+        </select>
+      </div>
+      <div class="cust-filter-group">
+        <label>Product</label>
+        <select id="custProductFilter" onchange="renderCustomers()">
+          <option value="">All Products</option>
+        </select>
+      </div>
+      <div class="cust-filter-group">
+        <label>Status</label>
+        <select id="custStatusFilter" onchange="renderCustomers()">
+          <option value="">All Status</option>
+          <option>Delivered</option><option>In Transit</option>
+          <option>Pending</option><option>Returned</option>
+          <option>Cancelled</option><option>Other</option>
+        </select>
+      </div>
+      <div class="cust-filter-group">
+        <label>From Date</label>
+        <input type="date" id="custFromDate" onchange="renderCustomers()">
+      </div>
+      <div class="cust-filter-group">
+        <label>To Date</label>
+        <input type="date" id="custToDate" onchange="renderCustomers()">
+      </div>
+      <button class="btn-reset-filter" onclick="resetCustFilters()">↺ Reset</button>
+    </div>
+
+    <!-- Summary KPIs -->
+    <div class="cust-summary-row" id="custKpiRow"></div>
+
+    <!-- Table -->
+    <div class="cust-table-wrap">
+      <table class="cust-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Handled By</th>
+            <th>Vendor</th>
+          </tr>
+        </thead>
+        <tbody id="custTableBody"></tbody>
+      </table>
+      <div class="pagination-row">
+        <div id="custPaginationInfo">Showing 0 records</div>
+        <div class="page-btns" id="custPageBtns"></div>
+      </div>
+    </div>
+
+  </div>
+  </div><!-- /page-customers -->
+</div><!-- /section-sale -->
+
+<!-- ═══ BUY LEADS SECTION ═══ -->
+<div id="section-buyleads" style="display:none">
+  <!-- Sub-tabs bar -->
+  <div class="sub-tabs-bar" style="background:var(--text)">
+    <button class="sub-tab active" onclick="switchBLTab('submit',this)">➕ Submit New Buy Lead</button>
+    <button class="sub-tab" onclick="switchBLTab('allleads',this)">📋 All Buy Leads</button>
+  </div>
+
+  <!-- Submit Buy Lead -->
+  <div class="page active" id="page-bl-submit">
+    <div class="entry-wrap">
+      <div class="page-hero">
+        <div>
+          <h1>Submit Buy Lead</h1>
+          <p>Enter customer interest / buy lead details. Multiple entries per day allowed.</p>
+        </div>
+        <div class="hero-badge" id="blHeroBadge">New Lead</div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon">🎯</div>
+          <div class="form-card-title">Buy Lead Details</div>
+        </div>
+        <div class="fields-grid-2">
+          <div class="f-group">
+            <label class="f-label">Date <span class="req-star">*</span></label>
+            <input class="f-input req" id="bl_date" type="date">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Full Name <span class="req-star">*</span></label>
+            <input class="f-input req" id="bl_fullname" type="text" placeholder="Customer full name">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Product <span class="req-star">*</span></label>
+            <input class="f-input req" id="bl_product" type="text" placeholder="Product interested in">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Email ID</label>
+            <input class="f-input" id="bl_email" type="email" placeholder="customer@email.com">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Contact Number <span class="req-star">*</span></label>
+            <div class="phone-wrap">
+              <select class="phone-code" id="bl_phone_code">
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+65">🇸🇬 +65</option>
+                <option value="+60">🇲🇾 +60</option>
+                <option value="+61">🇦🇺 +61</option>
+              </select>
+              <input class="f-input req" id="bl_phone" type="tel" placeholder="Phone number">
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Employee Name <span class="req-star">*</span></label>
+            <select class="f-select req" id="bl_emp">
+              <option value="">— Select Employee —</option>
+              <option>Lisa</option><option>Susan</option>
+              <option>Rachel</option><option>Bella</option><option>Alex</option>
+            </select>
+          </div>
+        </div>
+        <div class="submit-row" style="margin-top:20px">
+          <button class="btn-submit" onclick="submitBuyLead()">🚀 Submit Buy Lead</button>
+        </div>
+      </div>
+
+      <div class="success-screen" id="blSuccessScreen" style="display:none">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Lead Submitted!</div>
+        <div class="success-sub">Buy lead recorded in the sheet.</div>
+        <button onclick="addAnotherLead()" style="margin-top:20px;padding:11px 28px;border-radius:10px;background:var(--text);color:var(--accent);border:none;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;font-size:14px">+ Add Another Lead</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Buy Leads -->
+  <div class="page" id="page-bl-allleads">
+    <div class="customers-wrap">
+      <!-- Filters -->
+      <div class="cust-filters">
+        <div class="cust-filter-group">
+          <label>Search</label>
+          <input type="text" id="blSearch" placeholder="Name, phone, product…" oninput="renderAllLeads()">
+        </div>
+        <div class="cust-filter-group">
+          <label>Employee</label>
+          <select id="blEmpFilter" onchange="renderAllLeads()">
+            <option value="">All Employees</option>
+            <option>Lisa</option><option>Susan</option>
+            <option>Rachel</option><option>Bella</option><option>Alex</option>
+          </select>
+        </div>
+        <div class="cust-filter-group">
+          <label>Product</label>
+          <select id="blProductFilter" onchange="renderAllLeads()">
+            <option value="">All Products</option>
+          </select>
+        </div>
+        <div class="cust-filter-group">
+          <label>From Date</label>
+          <input type="date" id="blFromDate" onchange="renderAllLeads()">
+        </div>
+        <div class="cust-filter-group">
+          <label>To Date</label>
+          <input type="date" id="blToDate" onchange="renderAllLeads()">
+        </div>
+        <button class="btn-reset-filter" onclick="resetBLFilters()">↺ Reset</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="cust-summary-row" id="blKpiRow"></div>
+
+      <!-- Table -->
+      <div class="cust-table-wrap">
+        <table class="cust-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Customer</th><th>Product</th>
+              <th>Date</th><th>Employee</th>
+            </tr>
+          </thead>
+          <tbody id="blTableBody"></tbody>
+        </table>
+        <div class="pagination-row">
+          <div id="blPaginationInfo">Showing 0 records</div>
+          <div class="page-btns" id="blPageBtns"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /section-buyleads -->
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+const ADMIN_PASS = 'vibesgood@admin';
+const EMPLOYEES  = ['Lisa','Susan','Rachel','Bella','Alex'];
+
+// Google Sheet published CSV URL — update after publishing Sheet to web
+// Sheet → File → Share → Publish to web → CSV
+// Replace this with your published CSV URL:
+const CSV_URL    = 'https://docs.google.com/spreadsheets/d/1e-H_B_7b8cSji8aXa-3y7A5Reemrnr3IQhb5SoqHXZ0/export?format=csv&gid=0';
+const CSV_BL_URL = 'https://docs.google.com/spreadsheets/d/1e-H_B_7b8cSji8aXa-3y7A5Reemrnr3IQhb5SoqHXZ0/export?format=csv&gid=1800189238';
+
+// Apps Script URL — set via Settings
+// ── PASTE YOUR APPS SCRIPT WEB APP URL HERE ──
+// After deploying Apps Script, paste the URL between the quotes below.
+// This works across ALL systems — no per-device setup needed.
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwob6GT-5en1jrFv3cEokEw3tMqd47Quw6npKNc_1TsXccBsv1LDd4srdlW6b-3cMvnzw/exec';
+
+function getWebAppUrl() {
+  // Falls back to localStorage for backward compatibility
+  return APPS_SCRIPT_URL || localStorage.getItem('vg_webapp_url') || '';
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+function toDS(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+const today = new Date();
+const todayStr = toDS(today);
+
+let entries = []; // all rows from sheet: {emp, source, date, vendor, tracking, status, fullname, address, product, qty, amount, currency, payment, email, phone, remarks, colab}
+let selectedStatus = '';
+let colabNames = [];
+let currentEmp = '';
+let selectedPerfDate = null;
+
+// ═══════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const idx = {sale:0, buyleads:1};
+  document.querySelectorAll('.nav-tab')[idx[tab]||0].classList.add('active');
+  document.getElementById('section-sale').style.display     = tab==='sale'     ? 'block':'none';
+  document.getElementById('section-buyleads').style.display = tab==='buyleads' ? 'block':'none';
+  if(tab==='sale') {
+    switchSaleTab('entry', document.querySelector('#section-sale .sub-tab'));
+  }
+  if(tab==='buyleads') {
+    // Make sure submit form is visible
+    const submitPage = document.getElementById('page-bl-submit');
+    const allPage    = document.getElementById('page-bl-allleads');
+    if(submitPage) { submitPage.style.display='block'; submitPage.classList.add('active'); }
+    if(allPage)    { allPage.style.display='none';     allPage.classList.remove('active'); }
+    // Make sure form-card is visible, success hidden
+    const fc = document.querySelector('#page-bl-submit .form-card');
+    const sc = document.getElementById('blSuccessScreen');
+    if(fc) fc.style.display='block';
+    if(sc) sc.style.display='none';
+    document.querySelectorAll('#section-buyleads .sub-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    loadBuyLeads();
+  }
+  window.scrollTo(0,0);
+}
+
+function switchSaleTab(sub, btn) {
+  ['entry','report','perf','customers'].forEach(id=>{
+    const el=document.getElementById('page-'+id);
+    if(el) { el.classList.remove('active'); el.style.display='none'; }
+  });
+  document.querySelectorAll('#section-sale .sub-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(!btn) {
+    document.querySelectorAll('#section-sale .sub-tab').forEach(t=>{
+      if(t.textContent.toLowerCase().includes(sub)) t.classList.add('active');
+    });
+  }
+  const el = document.getElementById('page-'+sub);
+  if(el) { el.classList.add('active'); el.style.display='block'; }
+  if(sub==='report') renderReport();
+  if(sub==='perf') renderPerf();
+  if(sub==='customers') initCustomers();
+  window.scrollTo(0,0);
+}
+
+function switchBLTab(sub, btn) {
+  ['bl-submit','bl-allleads'].forEach(id=>{
+    const el=document.getElementById('page-'+id);
+    if(el) { el.classList.remove('active'); el.style.display='none'; }
+  });
+  document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  // Also highlight by text match in case btn is null
+  if(!btn) {
+    document.querySelectorAll('#section-buyleads .sub-tab').forEach(t=>{
+      if((sub==='submit'&&t.textContent.includes('Submit'))||(sub==='allleads'&&t.textContent.includes('All')))
+        t.classList.add('active');
+    });
+  }
+  const el = document.getElementById('page-'+sub);
+  if(el) { el.classList.add('active'); el.style.display='block'; }
+  if(sub==='allleads') renderAllLeads();
+  window.scrollTo(0,0);
+}
+
+function setNavDate() {
+  document.getElementById('navDate').textContent =
+    today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+// ═══════════════════════════════════════════════
+// ENTRY TAB
+// ═══════════════════════════════════════════════
+function onEmpChange() {
+  const val = document.getElementById('empSelect').value;
+  currentEmp = val;
+  colabNames = [];
+  document.querySelectorAll('.colab-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('colabWrap').style.display = val==='colab' ? 'block' : 'none';
+  document.getElementById('heroBadge').textContent = val ? (val==='colab'?'🤝 Colab Mode':val) : 'Select Employee →';
+
+  document.getElementById('entryForm').style.display  = 'none';
+  document.getElementById('successScreen').style.display = 'none';
+  const alreadyMsg = document.getElementById('alreadyMsg');
+  if(alreadyMsg) alreadyMsg.style.display = 'none';
+
+  if(!val) return;
+
+  if(val === 'colab') {
+    // Colab: wait for employee selection + Continue button
+    return;
+  }
+  // Single emp: show form immediately
+  clearFormFields();
+  document.getElementById('entryForm').style.display = 'block';
+}
+
+function proceedColab() {
+  if(colabNames.length < 2) {
+    showToast('Select at least 2 employees for Colab', 'err');
+    return;
+  }
+  document.getElementById('entryForm').style.display = 'block';
+  document.getElementById('f_date').value = todayStr;
+  clearFormFields();
+  // Scroll to form
+  document.getElementById('entryForm').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function clearFormFields() {
+  ['f_source','f_vendor','f_tracking','f_status','f_fullname','f_address',
+   'f_product','f_qty','f_amount','f_payment','f_email','f_phone','f_remarks']
+  .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f_date').value = todayStr;
+  document.getElementById('f_phone_code').value = '+91';
+  document.getElementById('f_currency').value = '₹';
+  selectedStatus = '';
+  document.querySelectorAll('.status-badge').forEach(b=>{ b.className='status-badge'; });
+}
+
+function toggleColab(chip) {
+  chip.classList.toggle('selected');
+  colabNames = Array.from(document.querySelectorAll('.colab-chip.selected')).map(c=>c.dataset.name);
+  const lbl = document.getElementById('colabSelectedNames');
+  if(lbl) lbl.textContent = colabNames.length ? colabNames.join(' + ') + ' selected' : '';
+}
+
+function selectStatus(el, val) {
+  document.querySelectorAll('.status-badge').forEach(b=>{
+    b.className = 'status-badge';
+  });
+  selectedStatus = val;
+  document.getElementById('f_status').value = val;
+  const cls = {
+    'Delivered':'sel-delivered','In Transit':'sel-transit',
+    'Pending':'sel-pending','Returned':'sel-returned',
+    'Cancelled':'sel-cancelled','Other':'sel-other'
+  };
+  el.classList.add(cls[val]||'');
+}
+
+function addAnotherEntry() {
+  document.getElementById('successScreen').style.display = 'none';
+  clearFormFields();
+  document.getElementById('entryForm').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function submitEntry() {
+  const emp = document.getElementById('empSelect').value;
+  if(!emp) { showToast('Select an employee first','err'); return; }
+
+  // Validate mandatory fields
+  const mandatory = [
+    {id:'f_date', lbl:'Date'},
+    {id:'f_vendor', lbl:'Vendor'},
+    {id:'f_product', lbl:'Product'},
+    {id:'f_qty', lbl:'Quantity'},
+    {id:'f_amount', lbl:'Total Amount'},
+    {id:'f_payment', lbl:'Payment Type'},
+    {id:'f_phone', lbl:'Contact Number'},
+    {id:'f_address', lbl:'Address'},
+    {id:'f_remarks', lbl:'Customer Remarks'},
+  ];
+  for(const f of mandatory) {
+    if(!document.getElementById(f.id).value.trim()) {
+      showToast(`${f.lbl} is required`,'err');
+      document.getElementById(f.id).focus();
+      return;
+    }
+  }
+  if(emp==='colab' && colabNames.length<2) {
+    showToast('Select at least 2 employees for Colab','err'); return;
+  }
+
+  const entry = {
+    emp:        emp==='colab' ? colabNames.join(', ') : emp,
+    colab:      emp==='colab' ? 'yes' : 'no',
+    source:     document.getElementById('f_source').value.trim(),
+    date:       document.getElementById('f_date').value,
+    vendor:     document.getElementById('f_vendor').value.trim(),
+    tracking:   document.getElementById('f_tracking').value.trim(),
+    status:     document.getElementById('f_status').value.trim(),
+    fullname:   document.getElementById('f_fullname').value.trim(),
+    address:    document.getElementById('f_address').value.trim(),
+    product:    document.getElementById('f_product').value.trim(),
+    qty:        parseInt(document.getElementById('f_qty').value)||0,
+    currency:   document.getElementById('f_currency').value,
+    amount:     parseFloat(document.getElementById('f_amount').value)||0,
+    payment:    document.getElementById('f_payment').value.trim(),
+    email:      document.getElementById('f_email').value.trim(),
+    phone:      document.getElementById('f_phone_code').value + document.getElementById('f_phone').value.trim(),
+    remarks:    document.getElementById('f_remarks').value.trim(),
+    submittedAt:new Date().toISOString(),
+  };
+
+  // Save locally
+  saveLocalEntry(entry);
+  entries.push(entry);
+
+  // Push to Apps Script
+  pushToSheet(entry);
+
+  // Show success screen with "Add Another" option
+  document.getElementById('entryForm').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  showToast('✅ Entry submitted successfully!','ok');
+}
+
+// ═══════════════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════════════
+function getLocalEntries() {
+  try { return JSON.parse(localStorage.getItem('vg_entries')||'[]'); } catch(e){return[];}
+}
+function saveLocalEntry(entry) {
+  const all = getLocalEntries();
+  all.push(entry);
+  localStorage.setItem('vg_entries', JSON.stringify(all));
+}
+function clearVGCache() {
+  localStorage.removeItem('vg_entries');
+  entries = [];
+  closeSettings();
+  showToast('🗑 Cache cleared — syncing…','ok');
+  loadFromSheet().then(()=>{ renderReport(); renderPerf(); startAutoSync(); });
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE SHEET SYNC
+// ═══════════════════════════════════════════════
+function setSyncBadge(state) {
+  const badge = document.getElementById('syncBadge');
+  const btn   = document.getElementById('syncBtn');
+  if(!badge) return;
+  if(state === null) {
+    badge.className = 'sync-badge load';
+    badge.textContent = 'Syncing…';
+    if(btn) btn.classList.add('syncing');
+  } else if(state === true) {
+    const now = new Date();
+    const t = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    badge.className = 'sync-badge ok';
+    badge.textContent = '✓ Synced ' + t;
+    if(btn) btn.classList.remove('syncing');
+  } else {
+    badge.className = 'sync-badge err';
+    badge.textContent = '⚠ Sheet unreachable';
+    if(btn) btn.classList.remove('syncing');
+  }
+}
+
+async function manualSync() {
+  setSyncBadge(null);
+  await loadFromSheet();
+  const tab = document.querySelector('.nav-tab.active');
+  if(tab) {
+    const txt = tab.textContent;
+    if(txt.includes('Report')) renderReport();
+    if(txt.includes('Performance')) renderPerf();
+    if(txt.includes('Customers')) { initCustomers(); }
+  }
+}
+
+let syncInterval = null;
+function startAutoSync() {
+  if(syncInterval) clearInterval(syncInterval);
+  // Auto sync every 5 minutes
+  syncInterval = setInterval(async () => {
+    setSyncBadge(null);
+    await loadFromSheet();
+    // Re-render current tab
+    const activeTab = document.querySelector('.page.active');
+    if(activeTab) {
+      if(activeTab.id === 'page-report') renderReport();
+      if(activeTab.id === 'page-perf') renderPerf();
+      if(activeTab.id === 'page-customers') renderCustomers();
+      if(activeTab.id === 'page-bl-allleads') renderAllLeads();
+    }
+  }, 5 * 60 * 1000);
+}
+
+async function loadFromSheet() {
+  setSyncBadge(null);
+  try {
+    const r = await fetch(CSV_URL + '&nc=' + Date.now());
+    const txt = await r.text();
+    if(!txt||txt.trim().startsWith('<!')) throw new Error('Not CSV — sheet may not be published');
+    entries = parseSheetCSV(txt);
+    localStorage.setItem('vg_entries', JSON.stringify(entries));
+    console.log('[VG] Loaded', entries.length, 'entries from sheet');
+    setSyncBadge(true);
+  } catch(e) {
+    console.warn('[VG] Sheet load failed, using localStorage:', e.message);
+    entries = getLocalEntries();
+    setSyncBadge(false);
+  }
+}
+
+function parseSheetCSV(csv) {
+  const lines = csv.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(lines.length < 2) return [];
+  const rows = [];
+  for(let i=1; i<lines.length; i++) {
+    const c = parseCSVLine(lines[i]);
+    if(!c[0]) continue;
+    rows.push({
+      emp:c[0]||'', colab:c[1]||'no', source:c[2]||'', date:c[3]||'',
+      vendor:c[4]||'', tracking:c[5]||'', status:c[6]||'',
+      fullname:c[7]||'', address:c[8]||'', product:c[9]||'',
+      qty:parseFloat(c[10])||0, currency:c[11]||'₹', amount:parseFloat(c[12])||0,
+      payment:c[13]||'', email:c[14]||'', phone:c[15]||'', remarks:c[16]||''
+    });
+  }
+  return rows;
+}
+
+function parseCSVLine(line) {
+  const out=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){out.push(cur.trim());cur='';}
+    else cur+=ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+async function pushToSheet(entry) {
+  const url = getWebAppUrl();
+  if(!url) return;
+  try {
+    await fetch(url, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(entry)
+    });
+  } catch(e){ console.warn('Push failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function getEmpNames(entry) {
+  // For colab entries, return all names in emp field
+  if(entry.colab==='yes') return entry.emp.split(',').map(n=>n.trim());
+  return [entry.emp.trim()];
+}
+
+function getEmpEntries(empName) {
+  return entries.filter(e => getEmpNames(e).includes(empName));
+}
+
+function getEntriesByDate(empName, dateStr) {
+  return getEmpEntries(empName).filter(e=>e.date===dateStr);
+}
+
+function getWeekRange(ago=0) {
+  const now = new Date();
+  const dow = now.getDay();
+  const mon = new Date(now); mon.setDate(now.getDate()-((dow+6)%7)-(ago*7));
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  return {from:toDS(mon), to:toDS(sun)};
+}
+
+function getMonthRange(ago=0) {
+  const now = new Date();
+  const yr = now.getFullYear(); const mo = now.getMonth()-ago;
+  const from = new Date(yr,mo,1); const to = new Date(yr,mo+1,0);
+  return {from:toDS(from), to:toDS(to)};
+}
+
+function countInRange(empName, from, to) {
+  return getEmpEntries(empName).filter(e=>e.date>=from&&e.date<=to).length;
+}
+
+function getLast10Days() {
+  const days=[];
+  const now=new Date();
+  for(let i=0;i<10;i++){
+    const d=new Date(now); d.setDate(now.getDate()-i);
+    days.push(toDS(d));
+  }
+  return days;
+}
+
+// ═══════════════════════════════════════════════
+// REPORT TAB
+// ═══════════════════════════════════════════════
+function renderReport() {
+  const grid = document.getElementById('empCardsGrid');
+  grid.innerHTML = '';
+  EMPLOYEES.forEach(name => {
+    const total = getEmpEntries(name).length;
+    const todayCount = getEntriesByDate(name, todayStr).length;
+    const card = document.createElement('div');
+    card.className = 'emp-card-vg';
+    card.innerHTML = `
+      <div class="emp-avatar">${name[0]}</div>
+      <div class="emp-card-name">${name}</div>
+      <div class="emp-card-role">Order Agent</div>
+      <div class="emp-card-count">${total}</div>
+      <div class="emp-card-count-lbl">Total Entries</div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text2)">Today: <b style="color:var(--accent)">${todayCount}</b></div>
+    `;
+    card.onclick = () => openPanel(name);
+    grid.appendChild(card);
+  });
+}
+
+function openPanel(name) {
+  const panel = document.getElementById('empDetailPanel');
+  document.getElementById('panelTitle').textContent = name + ' — Detailed Report';
+  panel.classList.add('open');
+
+  // Stats
+  const wk  = getWeekRange(0);
+  const mo  = getMonthRange(0);
+  const today = countInRange(name, todayStr, todayStr);
+  const week  = countInRange(name, wk.from, wk.to);
+  const month = countInRange(name, mo.from, mo.to);
+  const total = getEmpEntries(name).length;
+
+  document.getElementById('panelStats').innerHTML = `
+    <div class="stat-box"><div class="stat-box-val">${today}</div><div class="stat-box-lbl">Today</div></div>
+    <div class="stat-box"><div class="stat-box-val">${week}</div><div class="stat-box-lbl">This Week</div></div>
+    <div class="stat-box"><div class="stat-box-val">${month}</div><div class="stat-box-lbl">This Month</div></div>
+  `;
+
+  // Comparison
+  const lwk = getWeekRange(1); const lmo = getMonthRange(1);
+  const yest = new Date(new Date().setDate(new Date().getDate()-1));
+  const yesterdayStr = toDS(yest);
+  const yd = countInRange(name, yesterdayStr, yesterdayStr);
+  const lw = countInRange(name, lwk.from, lwk.to);
+  const lm = countInRange(name, lmo.from, lmo.to);
+
+  function delta(a,b){ const d=a-b; return `<span class="cmp-delta ${d>0?'up':d<0?'down':'same'}">${d>0?'▲+':''}${d===0?'= Same':d}</span>`; }
+
+  document.getElementById('panelCmp').innerHTML = `
+    <div class="cmp-box">
+      <div class="cmp-box-lbl">Yesterday vs Today</div>
+      <div class="cmp-nums"><div class="cmp-now">${today}</div><div class="cmp-vs">vs</div><div class="cmp-then">${yd}</div></div>
+      ${delta(today,yd)}
+    </div>
+    <div class="cmp-box">
+      <div class="cmp-box-lbl">Last Week vs This Week</div>
+      <div class="cmp-nums"><div class="cmp-now">${week}</div><div class="cmp-vs">vs</div><div class="cmp-then">${lw}</div></div>
+      ${delta(week,lw)}
+    </div>
+    <div class="cmp-box">
+      <div class="cmp-box-lbl">Last Month vs This Month</div>
+      <div class="cmp-nums"><div class="cmp-now">${month}</div><div class="cmp-vs">vs</div><div class="cmp-then">${lm}</div></div>
+      ${delta(month,lm)}
+    </div>
+  `;
+
+  // Date table (last 30 days with entries)
+  const empEntries = getEmpEntries(name);
+  const byDate = {};
+  empEntries.forEach(e=>{ byDate[e.date]=(byDate[e.date]||0)+1; });
+  const sortedDates = Object.keys(byDate).sort().reverse().slice(0,20);
+  document.getElementById('panelDateTable').innerHTML = sortedDates.length
+    ? `<table class="date-table">
+        <thead><tr><th>Date</th><th>Entries</th><th>Products</th><th>Total Qty (pills)</th></tr></thead>
+        <tbody>${sortedDates.map(ds=>{
+          const dayEntries = empEntries.filter(e=>e.date===ds);
+          const qty = dayEntries.reduce((a,e)=>a+e.qty,0);
+          const products = [...new Set(dayEntries.map(e=>e.product).filter(Boolean))].slice(0,2).join(', ')||'—';
+          return `<tr><td><b>${ds}</b></td><td>${byDate[ds]}</td><td>${products}</td><td>${qty} pills</td></tr>`;
+        }).join('')}</tbody>
+      </table>`
+    : '<div style="color:var(--text3);font-size:13px;padding:12px 0">No entries found</div>';
+
+  // Bar chart (last 7 days)
+  const last7 = getLast10Days().slice(0,7).reverse();
+  const maxC = Math.max(...last7.map(ds=>(byDate[ds]||0)),1);
+  document.getElementById('panelBarChart').innerHTML = last7.map(ds=>{
+    const count = byDate[ds]||0;
+    const w = Math.round((count/maxC)*100);
+    const label = new Date(ds.replace(/-/g,'/')).toLocaleDateString('en-IN',{weekday:'short',day:'numeric'});
+    return `<div class="bar-row">
+      <div class="bar-lbl">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%"><span>${count||''}</span></div></div>
+    </div>`;
+  }).join('');
+
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function closePanel() {
+  document.getElementById('empDetailPanel').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════
+// PERFORMANCE TAB
+// ═══════════════════════════════════════════════
+function renderPerf() {
+  // KPI hero row
+  const total = entries.length;
+  const mo = getMonthRange(0);
+  const monthTotal = entries.filter(e=>e.date>=mo.from&&e.date<=mo.to).length;
+  const todayTotal = entries.filter(e=>e.date===todayStr).length;
+  const totalQty = entries.reduce((a,e)=>a+e.qty,0);
+
+  document.getElementById('perfKpiRow').innerHTML = `
+    <div class="perf-kpi-mini"><div class="perf-kpi-mini-val">${total}</div><div class="perf-kpi-mini-lbl">Total Entries</div></div>
+    <div class="perf-kpi-mini"><div class="perf-kpi-mini-val">${monthTotal}</div><div class="perf-kpi-mini-lbl">This Month</div></div>
+    <div class="perf-kpi-mini"><div class="perf-kpi-mini-val">${todayTotal}</div><div class="perf-kpi-mini-lbl">Today</div></div>
+    <div class="perf-kpi-mini"><div class="perf-kpi-mini-val">${totalQty.toLocaleString()}</div><div class="perf-kpi-mini-lbl">Total Pills</div></div>
+  `;
+
+  // Score per emp (this month)
+  const scored = EMPLOYEES.map(name => {
+    const count = countInRange(name, mo.from, mo.to);
+    const qty = getEmpEntries(name).filter(e=>e.date>=mo.from&&e.date<=mo.to).reduce((a,e)=>a+e.qty,0);
+    const revenue = getEmpEntries(name).filter(e=>e.date>=mo.from&&e.date<=mo.to).reduce((a,e)=>a+e.amount,0);
+    return {name, count, qty, revenue};
+  }).sort((a,b)=>b.count-a.count);
+
+  // Top 3
+  const medals = ['🥇','🥈','🥉'];
+  const cls    = ['gold','silver','bronze'];
+  document.getElementById('top3Row').innerHTML = scored.slice(0,3).map((s,i)=>
+    `<div class="top3-card ${cls[i]}">
+      <span class="top3-medal">${medals[i]}</span>
+      <div class="top3-avatar">${s.name[0]}</div>
+      <div class="top3-name">${s.name}</div>
+      <div class="top3-score">${s.count}</div>
+      <div class="top3-score-lbl">Entries this month</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text2)">${s.qty} pills · ₹${s.revenue.toLocaleString()}</div>
+    </div>`
+  ).join('');
+
+  // Achievement cards
+  const allRevenue = entries.reduce((a,e)=>a+e.amount,0);
+  const delivered = entries.filter(e=>e.status==='Delivered').length;
+  const products = [...new Set(entries.map(e=>e.product).filter(Boolean))].length;
+  const topProduct = (() => {
+    const pc={};
+    entries.forEach(e=>{ if(e.product) pc[e.product]=(pc[e.product]||0)+1; });
+    return Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0]||'—';
+  })();
+
+  document.getElementById('achGrid').innerHTML = `
+    <div class="ach-card"><div class="ach-icon">📦</div><div class="ach-val">${total}</div><div class="ach-lbl">Total Orders</div></div>
+    <div class="ach-card"><div class="ach-icon">✅</div><div class="ach-val">${delivered}</div><div class="ach-lbl">Delivered</div></div>
+    <div class="ach-card"><div class="ach-icon">💊</div><div class="ach-val">${totalQty.toLocaleString()}</div><div class="ach-lbl">Total Pills</div></div>
+    <div class="ach-card"><div class="ach-icon">💰</div><div class="ach-val">₹${Math.round(allRevenue/1000)}K</div><div class="ach-lbl">Total Revenue</div></div>
+    <div class="ach-card"><div class="ach-icon">🏷</div><div class="ach-val">${products}</div><div class="ach-lbl">Products</div></div>
+    <div class="ach-card"><div class="ach-icon">⭐</div><div class="ach-val" style="font-size:14px">${topProduct}</div><div class="ach-lbl">Top Product</div></div>
+  `;
+
+  // Date toggle — last 10 days
+  const last10 = getLast10Days();
+  if(!selectedPerfDate) selectedPerfDate = last10[0];
+  const toggleRow = document.getElementById('perfDateToggle');
+  toggleRow.innerHTML = '';
+  last10.forEach(ds => {
+    const btn = document.createElement('button');
+    btn.className = 'dt-btn' + (ds===selectedPerfDate?' active':'');
+    const d = new Date(ds.replace(/-/g,'/'));
+    btn.textContent = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    btn.onclick = () => {
+      selectedPerfDate = ds;
+      document.querySelectorAll('.dt-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPerfDateTable(ds);
+    };
+    toggleRow.appendChild(btn);
+  });
+  renderPerfDateTable(selectedPerfDate);
+
+  // Comparison
+  const wk=getWeekRange(0); const lwk=getWeekRange(1); const lmo=getMonthRange(1);
+  const yest=new Date(today); yest.setDate(today.getDate()-1); const yd=toDS(yest);
+  const tt=entries.filter(e=>e.date===todayStr).length;
+  const yt=entries.filter(e=>e.date===yd).length;
+  const tw=entries.filter(e=>e.date>=wk.from&&e.date<=wk.to).length;
+  const lw=entries.filter(e=>e.date>=lwk.from&&e.date<=lwk.to).length;
+  const tm2=entries.filter(e=>e.date>=mo.from&&e.date<=mo.to).length;
+  const lm2=entries.filter(e=>e.date>=lmo.from&&e.date<=lmo.to).length;
+
+  function pdelta(a,b){ const d=a-b; return `<span class="cmp-delta ${d>0?'up':d<0?'down':'same'}">${d>0?'▲+':''}${d===0?'= Same':d}</span>`; }
+
+  document.getElementById('perfCmpRow').innerHTML = `
+    <div class="cmp-box"><div class="cmp-box-lbl">Yesterday vs Today (Team)</div><div class="cmp-nums"><div class="cmp-now">${tt}</div><div class="cmp-vs">vs</div><div class="cmp-then">${yt}</div></div>${pdelta(tt,yt)}</div>
+    <div class="cmp-box"><div class="cmp-box-lbl">Last Week vs This Week</div><div class="cmp-nums"><div class="cmp-now">${tw}</div><div class="cmp-vs">vs</div><div class="cmp-then">${lw}</div></div>${pdelta(tw,lw)}</div>
+    <div class="cmp-box"><div class="cmp-box-lbl">Last Month vs This Month</div><div class="cmp-nums"><div class="cmp-now">${tm2}</div><div class="cmp-vs">vs</div><div class="cmp-then">${lm2}</div></div>${pdelta(tm2,lm2)}</div>
+  `;
+
+  // Overall ranking
+  const rankData = EMPLOYEES.map(name=>{
+    const all = getEmpEntries(name);
+    const allDates = [...new Set(all.map(e=>e.date))];
+    const avgPerDay = allDates.length ? (all.length/allDates.length).toFixed(1) : 0;
+    const thisWeek = countInRange(name, wk.from, wk.to);
+    const thisMonth = countInRange(name, mo.from, mo.to);
+    const topProd = (() => {
+      const pc={};
+      all.forEach(e=>{ if(e.product) pc[e.product]=(pc[e.product]||0)+1; });
+      return Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0]||'—';
+    })();
+    return {name, total:all.length, thisMonth, thisWeek, avgPerDay, topProd};
+  }).sort((a,b)=>b.total-a.total);
+
+  const maxT = Math.max(...rankData.map(r=>r.total),1);
+  document.getElementById('rankingBody').innerHTML = rankData.map((r,i)=>`
+    <tr>
+      <td class="rank">#${i+1}</td>
+      <td><div class="emp-cell"><div class="mini-av">${r.name[0]}</div><div><div style="font-weight:700">${r.name}</div><div style="font-size:10px;color:var(--text3)">Order Agent</div></div></div></td>
+      <td><div style="font-weight:700;font-size:16px;font-family:'Poppins',sans-serif">${r.total}</div><div class="score-bar-wrap"><div class="score-bar-fill" style="width:${Math.round((r.total/maxT)*100)}%"></div></div></td>
+      <td style="font-weight:600">${r.thisMonth}</td>
+      <td style="font-weight:600">${r.thisWeek}</td>
+      <td>${r.avgPerDay}</td>
+      <td style="font-size:12px;color:var(--text2)">${r.topProd}</td>
+    </tr>
+  `).join('');
+}
+
+function renderPerfDateTable(ds) {
+  const dayEntries = entries.filter(e=>e.date===ds);
+  const empCounts = EMPLOYEES.map(name=>{
+    const c = dayEntries.filter(e=>getEmpNames(e).includes(name)).length;
+    const qty = dayEntries.filter(e=>getEmpNames(e).includes(name)).reduce((a,e)=>a+e.qty,0);
+    const rev = dayEntries.filter(e=>getEmpNames(e).includes(name)).reduce((a,e)=>a+e.amount,0);
+    return {name,c,qty,rev};
+  }).sort((a,b)=>b.c-a.c);
+  const totalC = empCounts.reduce((a,e)=>a+e.c,0)||1;
+  document.getElementById('perfDateBody').innerHTML = empCounts.map((e,i)=>
+    `<tr>
+      <td class="rank">#${i+1}</td>
+      <td><div class="emp-cell"><div class="mini-av">${e.name[0]}</div><b>${e.name}</b></div></td>
+      <td style="font-weight:700">${e.c}</td>
+      <td>${e.qty} pills</td>
+      <td>₹${e.rev.toLocaleString()}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="score-bar-wrap" style="min-width:60px;flex:1"><div class="score-bar-fill" style="width:${Math.round((e.c/totalC)*100)}%"></div></div>
+          <span style="font-size:11px;font-weight:700;color:var(--accent)">${Math.round((e.c/totalC)*100)}%</span>
+        </div>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ADMIN & SETTINGS
+// ═══════════════════════════════════════════════
+function openAdminModal() { document.getElementById('adminModal').classList.add('show'); setTimeout(()=>document.getElementById('adminPw').focus(),100); }
+function closeAdminModal() { document.getElementById('adminModal').classList.remove('show'); document.getElementById('adminPw').value=''; document.getElementById('adminPwErr').style.display='none'; }
+
+function doAdminReset() {
+  const pw = document.getElementById('adminPw').value;
+  if(pw!==ADMIN_PASS){ document.getElementById('adminPwErr').style.display='block'; document.getElementById('adminPw').value=''; return; }
+  // Remove today's entry for current emp from localStorage
+  const emp = currentEmp==='colab'?'colab':currentEmp;
+  const all = getLocalEntries().filter(e=>!(e.date===todayStr&&(e.emp===emp||e.emp.includes(emp))));
+  localStorage.setItem('vg_entries',JSON.stringify(all));
+  entries = entries.filter(e=>!(e.date===todayStr&&getEmpNames(e).includes(currentEmp)));
+  // Delete from sheet
+  const url=getWebAppUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',emp,date:todayStr})}).catch(()=>{});
+  closeAdminModal();
+  document.getElementById('alreadyMsg').style.display='none';
+  document.getElementById('entryForm').style.display='block';
+  document.getElementById('successScreen').style.display='none';
+  showToast('✅ Reset done — re-enter your data','ok');
+}
+
+function openSettings() {
+  const pw = prompt('Enter admin password:');
+  if(pw!==ADMIN_PASS){ if(pw!==null) showToast('❌ Wrong password','err'); return; }
+  document.getElementById('settingsUrl').value = getWebAppUrl();
+  const s=document.getElementById('settingsStatus');
+  s.textContent=getWebAppUrl()?'✓ URL configured':'⚠ Not configured yet';
+  s.style.color=getWebAppUrl()?'var(--green)':'var(--amber)';
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+function saveSettings() {
+  const url=document.getElementById('settingsUrl').value.trim();
+  localStorage.setItem('vg_webapp_url',url);
+  closeSettings();
+  showToast(url?'✅ URL saved! (also hardcode in HTML for all-device sync)':'URL cleared','ok');
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg,type='ok') {
+  const t=document.getElementById('vgToast');
+  t.textContent=msg; t.className='vg-toast show '+type;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ═══════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// CUSTOMERS TAB
+// ═══════════════════════════════════════════════
+const CUST_PAGE_SIZE = 20;
+let custPage = 1;
+let custFiltered = [];
+
+function initCustomers() {
+  // Populate product filter dynamically
+  const products = [...new Set(entries.map(e=>e.product).filter(Boolean))].sort();
+  const pf = document.getElementById('custProductFilter');
+  const current = pf.value;
+  pf.innerHTML = '<option value="">All Products</option>' + products.map(p=>`<option${p===current?' selected':''}>${p}</option>`).join('');
+  custPage = 1;
+  renderCustomers();
+}
+
+function resetCustFilters() {
+  document.getElementById('custSearch').value = '';
+  document.getElementById('custEmpFilter').value = '';
+  document.getElementById('custProductFilter').value = '';
+  document.getElementById('custStatusFilter').value = '';
+  document.getElementById('custFromDate').value = '';
+  document.getElementById('custToDate').value = '';
+  custPage = 1;
+  renderCustomers();
+}
+
+function getStatusClass(status) {
+  const s = (status||'').toLowerCase();
+  if(s.includes('deliver')) return 'sp-delivered';
+  if(s.includes('transit')) return 'sp-transit';
+  if(s.includes('pending')) return 'sp-pending';
+  if(s.includes('return'))  return 'sp-returned';
+  if(s.includes('cancel'))  return 'sp-cancelled';
+  if(s.includes('other'))   return 'sp-other';
+  return 'sp-default';
+}
+
+function renderCustomers() {
+  const search  = (document.getElementById('custSearch')?.value||'').toLowerCase();
+  const empF    = document.getElementById('custEmpFilter')?.value||'';
+  const prodF   = document.getElementById('custProductFilter')?.value||'';
+  const statusF = document.getElementById('custStatusFilter')?.value||'';
+  const fromD   = document.getElementById('custFromDate')?.value||'';
+  const toD     = document.getElementById('custToDate')?.value||'';
+
+  custFiltered = entries.filter(e => {
+    if(empF    && !getEmpNames(e).includes(empF)) return false;
+    if(prodF   && e.product !== prodF) return false;
+    if(statusF && e.status  !== statusF) return false;
+    if(fromD   && e.date < fromD) return false;
+    if(toD     && e.date > toD)   return false;
+    if(search) {
+      const hay = [e.fullname,e.phone,e.email,e.product,e.vendor,e.remarks,e.emp].join(' ').toLowerCase();
+      if(!hay.includes(search)) return false;
+    }
+    return true;
+  }).sort((a,b)=>b.date.localeCompare(a.date)); // newest first
+
+  // KPIs
+  const totalQty = custFiltered.reduce((a,e)=>a+e.qty,0);
+  const totalRev = custFiltered.reduce((a,e)=>a+e.amount,0);
+  const uniqueCust = new Set(custFiltered.map(e=>e.phone||e.fullname).filter(Boolean)).size;
+  const topProd = (() => {
+    const pc={};
+    custFiltered.forEach(e=>{ if(e.product) pc[e.product]=(pc[e.product]||0)+1; });
+    return Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0]||'—';
+  })();
+
+  document.getElementById('custKpiRow').innerHTML = `
+    <div class="cust-kpi"><div class="cust-kpi-val">${custFiltered.length}</div><div class="cust-kpi-lbl">Total Orders</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">${uniqueCust}</div><div class="cust-kpi-lbl">Unique Customers</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">${totalQty.toLocaleString()}</div><div class="cust-kpi-lbl">Total Pills</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">₹${totalRev.toLocaleString()}</div><div class="cust-kpi-lbl">Total Revenue</div></div>
+  `;
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(custFiltered.length / CUST_PAGE_SIZE));
+  if(custPage > totalPages) custPage = totalPages;
+  const start = (custPage-1)*CUST_PAGE_SIZE;
+  const pageData = custFiltered.slice(start, start+CUST_PAGE_SIZE);
+
+  // Table rows
+  const tbody = document.getElementById('custTableBody');
+  if(!pageData.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="no-records"><div class="no-records-icon">🔍</div>No records found</div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageData.map((e,i) => {
+      const initials = (e.fullname||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const empNames = getEmpNames(e).map(n=>`<span class="emp-tag">${n}</span>`).join(' ');
+      const statusCls = getStatusClass(e.status);
+      return `<tr>
+        <td style="color:var(--text3);font-weight:600;font-size:12px">${start+i+1}</td>
+        <td>
+          <div class="cust-name-cell">
+            <div class="cust-avatar">${initials}</div>
+            <div>
+              <div class="cust-name">${e.fullname||'—'}</div>
+              <div class="cust-phone">${e.phone||''} ${e.email?'· '+e.email:''}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight:600">${e.product||'—'}</td>
+        <td><b style="font-size:15px">${e.qty}</b> <span style="font-size:11px;color:var(--text3)">pills</span></td>
+        <td><b style="font-size:14px">${e.currency||'₹'}${(e.amount||0).toLocaleString()}</b></td>
+        <td style="white-space:nowrap">${e.date||'—'}</td>
+        <td><span class="status-pill ${statusCls}">${e.status||'—'}</span></td>
+        <td>${empNames}</td>
+        <td style="color:var(--text2);font-size:12px">${e.vendor||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Pagination info + buttons
+  document.getElementById('custPaginationInfo').textContent =
+    `Showing ${start+1}–${Math.min(start+CUST_PAGE_SIZE, custFiltered.length)} of ${custFiltered.length} records`;
+
+  const pageBtns = document.getElementById('custPageBtns');
+  pageBtns.innerHTML = '';
+  for(let p=1; p<=totalPages; p++) {
+    if(totalPages > 7 && p > 3 && p < totalPages-1 && Math.abs(p-custPage) > 1) {
+      if(p===4) pageBtns.innerHTML += '<span style="padding:5px 4px;color:var(--text3)">…</span>';
+      continue;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (p===custPage?' active':'');
+    btn.textContent = p;
+    btn.onclick = () => { custPage=p; renderCustomers(); };
+    pageBtns.appendChild(btn);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// BUY LEADS
+// ═══════════════════════════════════════════════
+let buyLeads = [];
+let blPage = 1;
+const BL_PAGE_SIZE = 20;
+
+async function loadBuyLeads() {
+  try {
+    const r = await fetch(CSV_BL_URL + '&nc=' + Date.now());
+    const txt = await r.text();
+    if(!txt || txt.trim().startsWith('<!')) throw new Error('Not CSV');
+    buyLeads = parseBLCSV(txt);
+    localStorage.setItem('vg_buyleads', JSON.stringify(buyLeads));
+    console.log('[VG] Buy Leads loaded:', buyLeads.length);
+  } catch(e) {
+    console.warn('[VG] Buy Leads fetch failed, using localStorage:', e.message);
+    try { buyLeads = JSON.parse(localStorage.getItem('vg_buyleads')||'[]'); } catch(x){buyLeads=[];}
+  }
+  renderAllLeads();
+}
+
+function parseBLCSV(csv) {
+  const lines = csv.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(lines.length < 2) return [];
+  const rows = [];
+  for(let i=1; i<lines.length; i++) {
+    const c = parseCSVLine(lines[i]);
+    if(!c[0]) continue;
+    // Columns: Date | Full Name | Product | Email | Phone | Employee
+    rows.push({
+      date:     c[0]||'',
+      fullname: c[1]||'',
+      product:  c[2]||'',
+      email:    c[3]||'',
+      phone:    c[4]||'',
+      emp:      c[5]||'',
+    });
+  }
+  return rows;
+}
+
+function clearBLForm() {
+  ['bl_fullname','bl_product','bl_email','bl_phone'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('bl_date').value = todayStr;
+  document.getElementById('bl_phone_code').value = '+91';
+  document.getElementById('bl_emp').value = '';
+}
+
+function submitBuyLead() {
+  const mandatory = [
+    {id:'bl_date',lbl:'Date'},{id:'bl_fullname',lbl:'Full Name'},
+    {id:'bl_product',lbl:'Product'},{id:'bl_phone',lbl:'Contact Number'},
+    {id:'bl_emp',lbl:'Employee Name'}
+  ];
+  for(const f of mandatory) {
+    if(!document.getElementById(f.id).value.trim()) {
+      showToast(f.lbl+' is required','err');
+      document.getElementById(f.id).focus();
+      return;
+    }
+  }
+
+  const lead = {
+    date:     document.getElementById('bl_date').value,
+    fullname: document.getElementById('bl_fullname').value.trim(),
+    product:  document.getElementById('bl_product').value.trim(),
+    email:    document.getElementById('bl_email').value.trim(),
+    phone:    document.getElementById('bl_phone_code').value + document.getElementById('bl_phone').value.trim(),
+    emp:      document.getElementById('bl_emp').value,
+  };
+
+  buyLeads.push(lead);
+  // Save local
+  try { localStorage.setItem('vg_buyleads', JSON.stringify(buyLeads)); } catch(e){}
+
+  // Push to Apps Script — action: 'buyLead' so script writes to Buy_Lead sheet
+  const url = getWebAppUrl();
+  if(url) {
+    fetch(url, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'buyLead', ...lead})
+    }).catch(()=>{});
+  }
+
+  // Show success
+  document.querySelector('#page-bl-submit .form-card').style.display = 'none';
+  document.getElementById('blSuccessScreen').style.display = 'block';
+  showToast('✅ Buy Lead submitted!','ok');
+}
+
+function addAnotherLead() {
+  document.querySelector('#page-bl-submit .form-card').style.display = 'block';
+  document.getElementById('blSuccessScreen').style.display = 'none';
+  clearBLForm();
+  window.scrollTo(0,0);
+}
+
+function resetBLFilters() {
+  ['blSearch','blFromDate','blToDate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['blEmpFilter','blProductFilter'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  blPage=1; renderAllLeads();
+}
+
+function renderAllLeads() {
+  const search  = (document.getElementById('blSearch')?.value||'').toLowerCase();
+  const empF    = document.getElementById('blEmpFilter')?.value||'';
+  const prodF   = document.getElementById('blProductFilter')?.value||'';
+  const fromD   = document.getElementById('blFromDate')?.value||'';
+  const toD     = document.getElementById('blToDate')?.value||'';
+
+  // Populate product filter
+  const prods = [...new Set(buyLeads.map(l=>l.product).filter(Boolean))].sort();
+  const pf = document.getElementById('blProductFilter');
+  if(pf) {
+    const cur=pf.value;
+    pf.innerHTML='<option value="">All Products</option>'+prods.map(p=>`<option${p===cur?' selected':''}>${p}</option>`).join('');
+  }
+
+  const filtered = buyLeads.filter(l=>{
+    if(empF  && l.emp  !== empF)  return false;
+    if(prodF && l.product !== prodF) return false;
+    if(fromD && l.date < fromD)   return false;
+    if(toD   && l.date > toD)     return false;
+    if(search) {
+      const hay=[l.fullname,l.phone,l.email,l.product,l.emp].join(' ').toLowerCase();
+      if(!hay.includes(search)) return false;
+    }
+    return true;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  // KPIs
+  const uniqueP = new Set(filtered.map(l=>l.phone||l.fullname).filter(Boolean)).size;
+  const uniqueProd = new Set(filtered.map(l=>l.product).filter(Boolean)).size;
+  const kpi = document.getElementById('blKpiRow');
+  if(kpi) kpi.innerHTML = `
+    <div class="cust-kpi"><div class="cust-kpi-val">${filtered.length}</div><div class="cust-kpi-lbl">Total Leads</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">${uniqueP}</div><div class="cust-kpi-lbl">Unique Contacts</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">${uniqueProd}</div><div class="cust-kpi-lbl">Products</div></div>
+    <div class="cust-kpi"><div class="cust-kpi-val">${filtered.filter(l=>l.date===todayStr).length}</div><div class="cust-kpi-lbl">Today's Leads</div></div>
+  `;
+
+  // Pagination
+  const totalPages = Math.max(1,Math.ceil(filtered.length/BL_PAGE_SIZE));
+  if(blPage>totalPages) blPage=totalPages;
+  const start=(blPage-1)*BL_PAGE_SIZE;
+  const pageData=filtered.slice(start,start+BL_PAGE_SIZE);
+
+  const tbody=document.getElementById('blTableBody');
+  if(!tbody) return;
+  if(!pageData.length) {
+    tbody.innerHTML='<tr><td colspan="5"><div class="no-records"><div class="no-records-icon">🎯</div>No leads found</div></td></tr>';
+  } else {
+    tbody.innerHTML=pageData.map((l,i)=>{
+      const ini=(l.fullname||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      return `<tr>
+        <td style="color:var(--text3);font-weight:600;font-size:12px">${start+i+1}</td>
+        <td>
+          <div class="cust-name-cell">
+            <div class="cust-avatar">${ini}</div>
+            <div>
+              <div class="cust-name">${l.fullname||'—'}</div>
+              <div class="cust-phone">${l.phone||''} ${l.email?'· '+l.email:''}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight:600">${l.product||'—'}</td>
+        <td style="white-space:nowrap">${l.date||'—'}</td>
+        <td><span class="emp-tag">${l.emp||'—'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const info=document.getElementById('blPaginationInfo');
+  if(info) info.textContent=`Showing ${start+1}–${Math.min(start+BL_PAGE_SIZE,filtered.length)} of ${filtered.length} leads`;
+  const pageBtns=document.getElementById('blPageBtns');
+  if(pageBtns) {
+    pageBtns.innerHTML='';
+    for(let p=1;p<=totalPages;p++){
+      if(totalPages>7&&p>3&&p<totalPages-1&&Math.abs(p-blPage)>1){ if(p===4) pageBtns.innerHTML+='<span style="padding:5px 4px;color:var(--text3)">…</span>'; continue; }
+      const btn=document.createElement('button');
+      btn.className='page-btn'+(p===blPage?' active':'');
+      btn.textContent=p;
+      btn.onclick=()=>{blPage=p;renderAllLeads();};
+      pageBtns.appendChild(btn);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  setNavDate();
+  document.getElementById('f_date').value = todayStr;
+  document.getElementById('bl_date').value = todayStr;
+  await loadFromSheet();
+  await loadBuyLeads();
+  startAutoSync();
+});
+</script>
+</body>
+</html>
